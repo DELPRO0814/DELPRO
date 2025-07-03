@@ -17,6 +17,14 @@ const resultMessage = document.getElementById('result-message');
 
 // --- Game Logic ---
 
+function newGame() {
+    createDeck();
+    // Add a delay before dealing initial hands
+    setTimeout(() => {
+        dealInitialHands();
+    }, 500); // 500ms delay
+}
+
 function createDeck() {
     deck = [];
     for (let suit of suits) {
@@ -241,14 +249,6 @@ function updateButtons() {
     hitButton.disabled = gameOver;
     standButton.disabled = gameOver;
     newGameButton.disabled = !gameOver;
-}
-
-function newGame() {
-    createDeck();
-    // Add a delay before dealing initial hands
-    setTimeout(() => {
-        dealInitialHands();
-    }, 500); // 500ms delay
 }
 
 // --- Event Listeners ---
