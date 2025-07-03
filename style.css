@@ -109,12 +109,14 @@ h2 {
     transform: rotateY(0deg);
     background-color: #fff;
     color: #333;
+    backface-visibility: hidden;
 }
 
 .card-back {
     transform: rotateY(180deg);
     background-color: #c0392b;
     color: transparent;
+    backface-visibility: hidden;
 }
 
 

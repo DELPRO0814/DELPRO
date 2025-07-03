@@ -245,7 +245,10 @@ function updateButtons() {
 
 function newGame() {
     createDeck();
-    dealInitialHands();
+    // Add a delay before dealing initial hands
+    setTimeout(() => {
+        dealInitialHands();
+    }, 500); // 500ms delay
 }
 
 // --- Event Listeners ---
@@ -253,5 +256,7 @@ hitButton.addEventListener('click', playerHit);
 standButton.addEventListener('click', playerStand);
 newGameButton.addEventListener('click', newGame);
 
-// Initial game setup
-newGame();
+// Initial game setup with a delay
+setTimeout(() => {
+    newGame();
+}, 200); // 200ms delay on initial load
