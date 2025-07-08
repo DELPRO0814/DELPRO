@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="always-on-display" style="display: none;">
+        <p>Current Coins: <span id="always-on-coins"></span></p>
+    </div>
+    <div id="login-container">
+        <h1>Blackjack</h1>
+        <input type="text" id="nickname" placeholder="Nickname">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-button">Login</button>
+        <button id="signup-button">Sign Up</button>
+    </div>
+    <div id="main-menu-container" style="display: none;">
+        <h1>Blackjack</h1>
+        <button id="play-button">Play</button>
+        <button id="personal-score-button">Personal Score</button>
+        <button id="ranking-button">All User Score Ranking</button>
+        <button id="mine-coin-button">Coin Mining</button>
+        <button id="logout-button">Logout</button>
+    </div>
+    <div id="mining-container" style="display: none;">
+        <h1>Coin Mining</h1>
+        <button id="mine-button">Mine 1 Coin</button>
+        <button id="back-to-main-button">Back to Main Menu</button>
+    </div>
+    <div id="game-wrapper" style="display: none;">
+        <div class="game-container">
+        <button id="quit-game-button">그만두기</button>
+        <h1>Blackjack</h1>
+
+        <div class="dealer-area">
+            <h2>Dealer: <span id="dealer-score">0</span></h2>
+            <div id="dealer-cards" class="cards-container"></div>
+        </div>
+
+        <div class="player-area">
+            <h2>Player: <span id="player-score">0</span></h2>
+            <div id="player-cards" class="cards-container"></div>
+            <div class="player-info">
+                <h3>Coins: <span id="player-coins">1000</span></h3>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="betting-controls">
+                <div class="bet-unit-control">
+                    <span>Unit:</span>
+                    <button class="unit-btn" data-unit="10">10</button>
+                    <button class="unit-btn active" data-unit="100">100</button>
+                    <button class="unit-btn" data-unit="500">500</button>
+                </div>
+                <div class="bet-amount-control">
+                    <button id="decrease-bet-btn">▼</button>
+                    <span id="bet-amount">100</span>
+                    <button id="increase-bet-btn">▲</button>
+                </div>
+                <button id="deal-button">Deal</button>
+            </div>
+            <div class="game-actions">
+                <button id="hit-button" disabled>Hit</button>
+                <button id="stand-button" disabled>Stand</button>
+            </div>
+        </div>
+
+        <div id="result-message" class="message"></div>
+    </div>
+    </div>
+
+    <!-- Quit Game Modal -->
+    <div id="quit-modal" class="modal">
+        <div class="modal-content">
+            <h2>게임 종료</h2>
+            <p>게임을 그만두시겠습니까? 현재 게임 진행 상황은 저장되지 않습니다.</p>
+            <div class="modal-buttons">
+                <button id="confirm-quit-button">확인</button>
+                <button id="cancel-quit-button">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2>게임 오버!</h2>
+            <p>모든 코인을 잃었습니다.</p>
+            <div class="modal-buttons">
+                <button id="go-to-main-button">메인 화면으로</button>
+                <button id="restart-game-button">재시작</n>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Score Modal -->
+    <div id="personal-score-modal" class="modal">
+        <div class="modal-content">
+            <h2>개인 통계</h2>
+            <div id="personal-stats-content">
+                <p><strong>최고 점수:</strong> <span id="stat-highest-score"></span></p>
+                <p><strong>최고 점수 획득 시 플레이 카운트:</strong> <span id="stat-highest-score-play-count"></span></p>
+                <p><strong>최고 점수 획득 시 Hit 카운트:</strong> <span id="stat-highest-score-hit-count"></span></p>
+                <p><strong>최고 점수 획득 시 Stand 카운트:</strong> <span id="stat-highest-score-stand-count"></span></p>
+                <p><strong>최고 점수 획득 날짜:</strong> <span id="stat-highest-score-date"></span></p>
+                <p><strong>최고 베팅액:</strong> <span id="stat-highest-bet-amount"></span></p>
+                <p><strong>승리 횟수:</strong> <span id="stat-wins"></span></p>
+                <p><strong>패배 횟수:</strong> <span id="stat-losses"></span></p>
+                <p><strong>버스트 횟수:</strong> <span id="stat-busts"></span></p>
+                <p><strong>무승부 횟수:</strong> <span id="stat-pushes"></span></p>
+                <p><strong>블랙잭 승리 횟수:</strong> <span id="stat-blackjack-wins"></span></p>
+                <p><strong>블랙잭 패배 횟수:</strong> <span id="stat-blackjack-losses"></span></p>
+                <p><strong>마지막 접속일:</strong> <span id="stat-last-login-at"></span></p>
+                <p><strong>현재 코인:</strong> <span id="stat-current-coins"></span></p>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-personal-score-button">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- All User Score Ranking Modal -->
+    <div id="ranking-modal" class="modal">
+        <div class="modal-content">
+            <h2>모든 유저 스코어 랭킹</h2>
+            <div id="ranking-list">
+                <!-- Ranking items will be inserted here by JavaScript -->
+            </div>
+            <div class="modal-buttons">
+                <button id="close-ranking-button">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Too Short Modal -->
+    <div id="password-short-modal" class="modal">
+        <div class="modal-content">
+            <h2>비밀번호 오류</h2>
+            <p>비밀번호는 4자리 이상이어야 합니다.</p>
+            <div class="modal-buttons">
+                <button id="close-password-short-modal">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nickname Exists Modal -->
+    <div id="nickname-exists-modal" class="modal">
+        <div class="modal-content">
+            <h2>닉네임 중복</h2>
+            <p>이미 존재하는 닉네임입니다. 다른 닉네임을 사용해주세요.</p>
+            <div class="modal-buttons">
+                <button id="close-nickname-exists-modal">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Success Modal -->
+    <div id="signup-success-modal" class="modal">
+        <div class="modal-content">
+            <h2>회원가입 성공</h2>
+            <p>회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>
+            <div class="modal-buttons">
+                <button id="close-signup-success-modal">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
