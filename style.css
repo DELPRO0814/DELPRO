@@ -375,3 +375,67 @@ h2 {
 .modal-buttons button:hover {
     background-color: #e67e22;
 }
+
+.text-button {
+    background: none;
+    border: none;
+    color: #f1c40f; /* Yellow color for text button */
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 10px;
+    padding: 5px;
+}
+
+.text-button:hover {
+    color: #e67e22;
+}
+
+/* Styles for details/summary in help modal */
+#help-modal details {
+    background-color: #2c3e50; /* Darker background for collapsible sections */
+    border-radius: 5px;
+    margin-bottom: 10px;
+    overflow: hidden; /* Ensures content stays within rounded corners */
+}
+
+#help-modal summary {
+    background-color: #34495e; /* Same as modal content background */
+    padding: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    border-bottom: 1px solid #2c3e50; /* Separator */
+    list-style: none; /* Remove default arrow */
+    position: relative;
+}
+
+#help-modal summary::-webkit-details-marker {
+    display: none; /* Hide default arrow for Chrome */
+}
+
+#help-modal summary::before {
+    content: '+'; /* Custom plus sign */
+    position: absolute;
+    right: 15px;
+    font-size: 1.2em;
+    transition: transform 0.2s ease;
+}
+
+#help-modal details[open] summary::before {
+    content: '-'; /* Custom minus sign when open */
+    transform: rotate(180deg); /* Rotate for visual effect */
+}
+
+#help-modal details p, #help-modal details ul {
+    padding: 15px;
+    margin: 0;
+    text-align: left;
+    line-height: 1.6;
+    color: #ecf0f1; /* Light gray for text */
+}
+
+#help-modal details ul {
+    list-style-position: inside;
+    padding-left: 30px; /* Indent list items */
+}

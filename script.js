@@ -29,6 +29,10 @@ const closeNicknameExistsModal = document.getElementById('close-nickname-exists-
 const signupSuccessModal = document.getElementById('signup-success-modal');
 const closeSignupSuccessModal = document.getElementById('close-signup-success-modal');
 
+const privacyPolicyModal = document.getElementById('privacy-policy-modal');
+const privacyPolicyButton = document.getElementById('privacy-policy-button');
+const closePrivacyPolicyModal = document.getElementById('close-privacy-policy-modal');
+
 let currentPlayerStats = {
     last_login_at: null,
     highest_score: 0,
@@ -278,6 +282,14 @@ modalSignupButton.addEventListener('click', async () => {
     signupPasswordInput.value = '';
 });
 
+privacyPolicyButton.addEventListener('click', () => {
+    privacyPolicyModal.classList.add('show');
+});
+
+closePrivacyPolicyModal.addEventListener('click', () => {
+    privacyPolicyModal.classList.remove('show');
+});
+
 closePasswordShortModal.addEventListener('click', () => {
     passwordShortModal.classList.remove('show');
 });
@@ -298,9 +310,13 @@ const personalScoreButton = document.getElementById('personal-score-button');
 const rankingButton = document.getElementById('ranking-button');
 const logoutButton = document.getElementById('logout-button');
 const mineCoinButton = document.getElementById('mine-coin-button');
+const helpButton = document.getElementById('help-button');
 const miningContainer = document.getElementById('mining-container');
 const mineButton = document.getElementById('mine-button');
 const backToMainButton = document.getElementById('back-to-main-button');
+
+const helpModal = document.getElementById('help-modal');
+const closeHelpModal = document.getElementById('close-help-modal');
 
 const alwaysOnDisplay = document.getElementById('always-on-display');
 const alwaysOnCoinsSpan = document.getElementById('always-on-coins');
@@ -352,6 +368,14 @@ mineButton.addEventListener('click', async () => {
 backToMainButton.addEventListener('click', () => {
     miningContainer.style.display = 'none';
     mainMenuContainer.style.display = 'block';
+});
+
+helpButton.addEventListener('click', () => {
+    helpModal.classList.add('show');
+});
+
+closeHelpModal.addEventListener('click', () => {
+    helpModal.classList.remove('show');
 });
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];

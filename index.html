@@ -23,6 +23,7 @@
         <button id="personal-score-button">Personal Score</button>
         <button id="ranking-button">All User Score Ranking</button>
         <button id="mine-coin-button">Coin Mining</button>
+        <button id="help-button">Help</button>
         <button id="logout-button">Logout</button>
     </div>
     <div id="mining-container" style="display: none;">
@@ -146,6 +147,20 @@
                 <button id="modal-signup-button">회원가입</button>
                 <button id="close-signup-modal">닫기</button>
             </div>
+            <button id="privacy-policy-button" class="text-button">Privacy Policy</button>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-policy-modal" class="modal">
+        <div class="modal-content">
+            <h2>개인정보 처리 방침</h2>
+            <p>본 사이트는 회원가입 시 닉네임과 비밀번호만을 요구하며, 그 외 개인정보는 일절 수집하지 않습니다.<br>
+            본 사이트는 닉네임과 비밀번호만으로 회원가입이 가능하며, 별도의 이메일 등 복구 수단이 없습니다. 비밀번호를 분실할 경우 계정 복구가 불가능하니 주의해 주세요.<br>
+            </p>
+            <div class="modal-buttons">
+                <button id="close-privacy-policy-modal">닫기</button>
+            </div>
         </div>
     </div>
 
@@ -178,6 +193,40 @@
             <p>회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>
             <div class="modal-buttons">
                 <button id="close-signup-success-modal">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Success Modal -->
+    <div id="signup-success-modal" class="modal">
+        <div class="modal-content">
+            <h2>회원가입 성공</h2>
+            <p>회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.</p>
+            <div class="modal-buttons">
+                <button id="close-signup-success-modal">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <h2>도움말</h2>
+            <details>
+                <summary>게임 방법</summary>
+                <p>블랙잭은 딜러와 플레이어가 카드를 받아 21에 가까운 숫자를 만드는 게임입니다. 21을 초과하면 버스트(Bust)되어 패배합니다. 에이스(A)는 1 또는 11로 계산될 수 있습니다.</p>
+                <ul>
+                    <li><strong>Hit:</strong> 카드를 한 장 더 받습니다.</li>
+                    <li><strong>Stand:</strong> 현재 카드로 턴을 종료합니다.</li>
+                    <li><strong>Bet:</strong> 게임 시작 전 베팅 금액을 설정합니다.</li>
+                </ul>
+            </details>
+            <details>
+                <summary>코인 마이닝</summary>
+                <p>코인 마이닝 페이지에서 버튼을 클릭하여 1코인을 얻을 수 있습니다. 연속 클릭 방지를 위해 0.1초의 딜레이가 있습니다.</p>
+            </details>
+            <div class="modal-buttons">
+                <button id="close-help-modal">닫기</button>
             </div>
         </div>
     </div>
