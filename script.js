@@ -16,6 +16,12 @@ const nicknameInput = document.getElementById('nickname');
 const passwordInput = document.getElementById('password');
 const signupButton = document.getElementById('signup-button');
 
+const signupModal = document.getElementById('signup-modal');
+const signupNicknameInput = document.getElementById('signup-nickname');
+const signupPasswordInput = document.getElementById('signup-password');
+const modalSignupButton = document.getElementById('modal-signup-button');
+const closeSignupModal = document.getElementById('close-signup-modal');
+
 const passwordShortModal = document.getElementById('password-short-modal');
 const closePasswordShortModal = document.getElementById('close-password-short-modal');
 const nicknameExistsModal = document.getElementById('nickname-exists-modal');
@@ -163,10 +169,18 @@ loginButton.addEventListener('click', async () => {
     }
 });
 
-signupButton.addEventListener('click', async () => {
+signupButton.addEventListener('click', () => {
+    signupModal.classList.add('show');
+});
+
+closeSignupModal.addEventListener('click', () => {
+    signupModal.classList.remove('show');
+});
+
+modalSignupButton.addEventListener('click', async () => {
     console.log('Sign Up button clicked');
-    const nickname = nicknameInput.value;
-    const password = passwordInput.value;
+    const nickname = signupNicknameInput.value;
+    const password = signupPasswordInput.value;
 
     if (!nickname || !password) {
         alert('닉네임과 비밀번호를 입력해주세요.');
@@ -257,10 +271,11 @@ signupButton.addEventListener('click', async () => {
 
     console.log('Attempting to show signup success modal');
     signupSuccessModal.classList.add('show');
+    signupModal.classList.remove('show'); // Close signup modal on success
     // 회원가입 성공 후 로그인 화면으로 돌아가거나, 바로 로그인 처리
     // 여기서는 로그인 화면으로 돌아가도록 처리
-    nicknameInput.value = '';
-    passwordInput.value = '';
+    signupNicknameInput.value = '';
+    signupPasswordInput.value = '';
 });
 
 closePasswordShortModal.addEventListener('click', () => {

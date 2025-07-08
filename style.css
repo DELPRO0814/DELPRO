@@ -45,6 +45,16 @@ body {
     border: 1px solid #ccc;
 }
 
+/* Styles for signup modal inputs */
+#signup-modal input {
+    width: calc(100% - 40px); /* Adjust width to account for padding */
+    padding: 15px; /* Larger padding */
+    margin: 15px 0; /* More margin */
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1.1em; /* Slightly larger font */
+}
+
 #login-container button, #main-menu-container button, #mining-container button {
     background-color: #f39c12;
     color: #fff;
