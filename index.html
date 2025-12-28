@@ -31,16 +31,20 @@
         }
 
         /* 헤더 영역 */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
         h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
-        .refresh-btn {
-            background: none; border: none; cursor: pointer; font-size: 1.2rem;
-            padding: 8px; border-radius: 50%; transition: background 0.2s;
+
+        /* [추가됨] 지원 택배사 안내 배지 */
+        .carrier-info { text-align: center; margin-bottom: 25px; }
+        .carrier-pill {
+            display: inline-block;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            background-color: #f3f4f6;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 500;
         }
-        .refresh-btn:hover { background-color: #f3f4f6; }
-        .refresh-btn.spinning { animation: spin 1s linear infinite; }
-        
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* 입력 폼 */
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
@@ -116,7 +120,10 @@
     <div class="container">
         <div class="header">
             <h1>📦 택배 비서</h1>
-            <button class="refresh-btn" onclick="refreshAll()" title="전체 새로고침">↻</button>
+        </div>
+        
+        <div class="carrier-info">
+            <span class="carrier-pill">지원: CJ대한통운 · 우체국 · 한진 · 롯데 · 로젠</span>
         </div>
 
         <form id="trackingForm">
@@ -135,7 +142,6 @@
         const trackingList = document.getElementById('tracking-list');
         const addBtn = document.getElementById('addBtn');
         const toast = document.getElementById('toast');
-        const refreshBtn = document.querySelector('.refresh-btn');
 
         const carrierInfo = {
             'kr.cjlogistics': { name: '대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
@@ -145,6 +151,7 @@
             'kr.logen': { name: '로젠', url: 'https://www.ilogen.com/m/personal/trace/' }
         };
 
+        // 페이지 로드 시 자동 실행
         document.addEventListener('DOMContentLoaded', refreshAll);
 
         document.getElementById('trackingNumber').addEventListener('input', e => {
@@ -214,24 +221,20 @@
 
         async function refreshAll() {
             const items = JSON.parse(localStorage.getItem('trackingItems')) || [];
-            trackingList.innerHTML = '';
             
             if (items.length === 0) {
                 trackingList.innerHTML = '<div class="empty-msg">등록된 택배가 없습니다</div>';
                 return;
             }
-
-            refreshBtn.classList.add('spinning');
-
+            
             renderSortedList(items);
 
             for (const item of items) {
                 await updateItemStatus(item);
             }
-
+            
             localStorage.setItem('trackingItems', JSON.stringify(items));
             renderSortedList(items); 
-            refreshBtn.classList.remove('spinning');
         }
 
         function renderSortedList(items) {
@@ -241,6 +244,8 @@
         }
 
         async function updateItemStatus(item) {
+            const el = document.getElementById(`item-${item.id}`);
+            
             try {
                 const res = await fetchWithProxy(`https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`);
                 const data = await res.json();
@@ -253,30 +258,34 @@
                     ? data.progresses[data.progresses.length - 1].time.substring(5, 16).replace('T', ' ')
                     : '';
 
-                const el = document.getElementById(`item-${item.id}`);
+                item.lastState = stateText;
+                item.lastDetail = location ? `${time} | ${location}` : (time || '');
+
+                if (stateText.includes('완료') || stateText.includes('도착')) {
+                    item.statusRank = 2; 
+                } else if (stateText.includes('실패') || stateText.includes('미등록')) {
+                     item.statusRank = 3; 
+                } else {
+                    item.statusRank = 1; 
+                }
+                
                 if (el) {
                     const statusTextEl = el.querySelector('.status-text');
                     const detailTextEl = el.querySelector('.detail-text');
                     
-                    statusTextEl.innerText = stateText;
-                    detailTextEl.innerText = location ? `${time} | ${location}` : (time || '');
+                    statusTextEl.innerText = item.lastState;
+                    detailTextEl.innerText = item.lastDetail;
                     
                     el.classList.remove('status-delivered', 'status-error');
-                    
-                    if (stateText.includes('완료') || stateText.includes('도착')) {
-                        el.classList.add('status-delivered');
-                        item.statusRank = 2; 
-                    } else if (stateText.includes('실패') || stateText.includes('미등록')) {
-                         item.statusRank = 3; 
-                    } else {
-                        item.statusRank = 1; 
-                    }
-                    
-                    item.lastState = stateText;
-                    item.lastDetail = detailTextEl.innerText;
+                    if (item.statusRank === 2) el.classList.add('status-delivered');
+                    if (item.statusRank === 3) el.classList.add('status-error');
                 }
+
             } catch (e) {
-                const el = document.getElementById(`item-${item.id}`);
+                item.lastState = '연동 지연';
+                item.lastDetail = '잠시 후 다시 시도해주세요';
+                item.statusRank = 3;
+
                 if(el) {
                     el.querySelector('.status-text').innerText = '연동 지연';
                     el.classList.add('status-error');
@@ -291,7 +300,9 @@
             const savedState = item.lastState || '확인 중...';
             const savedDetail = item.lastDetail || '';
             let statusClass = '';
-            if(savedState.includes('완료')) statusClass = 'status-delivered';
+            
+            if(savedState.includes('완료') || savedState.includes('도착')) statusClass = 'status-delivered';
+            else if(savedState.includes('지연') || savedState.includes('실패')) statusClass = 'status-error';
 
             const li = document.createElement('li');
             li.id = `item-${item.id}`;
