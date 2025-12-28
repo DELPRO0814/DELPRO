@@ -30,11 +30,10 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.05);
         }
 
-        /* 헤더 영역 */
         .header { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
         h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
 
-        /* [추가됨] 지원 택배사 안내 배지 */
+        /* [복구됨] 지원 택배사 안내 배지 */
         .carrier-info { text-align: center; margin-bottom: 25px; }
         .carrier-pill {
             display: inline-block;
@@ -48,11 +47,38 @@
 
         /* 입력 폼 */
         .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        
         input { 
             padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; 
             font-size: 1rem; outline: none; transition: all 0.2s; background: #f9fafb;
         }
         input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        /* 예상 택배사 알림 영역 */
+        .prediction-area {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #eff6ff; padding: 10px 14px; border-radius: 10px;
+            font-size: 0.9rem; color: var(--primary); font-weight: 600;
+            opacity: 0; transform: translateY(-10px); transition: all 0.3s;
+            pointer-events: none; height: 0; overflow: hidden; margin-top: -10px;
+        }
+        .prediction-area.show {
+            opacity: 1; transform: translateY(0); pointer-events: auto; height: auto; margin-top: 0;
+        }
+
+        .btn-change {
+            background: #fff; border: 1px solid #dbeafe; color: var(--text-sub);
+            padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+        }
+        .btn-change:hover { background: #f3f4f6; color: var(--text-main); }
+
+        /* 택배사 선택 박스 */
+        #carrierSelect {
+            padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;
+            font-size: 1rem; outline: none; background: #fff; color: var(--text-main);
+            display: none; 
+        }
+        #carrierSelect.show { display: block; }
 
         button.btn-add {
             width: 100%; padding: 14px; border: none; background-color: var(--primary);
@@ -72,48 +98,25 @@
         }
 
         .info-area { flex-grow: 1; min-width: 0; margin-right: 15px; }
-
         .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-        .item-title { 
-            font-size: 1.05rem; font-weight: 700; color: var(--text-main); 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .carrier-badge { 
-            font-size: 0.7rem; background: #e5e7eb; color: #4b5563; 
-            padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap;
-        }
-
+        .item-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .carrier-badge { font-size: 0.7rem; background: #e5e7eb; color: #4b5563; padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
         .meta-row { display: flex; flex-direction: column; gap: 2px; }
-        .number-row { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #9ca3af; }
-        .number { text-decoration: underline; cursor: pointer; }
-        .number:hover { color: var(--primary); }
-        
+        .number { text-decoration: underline; cursor: pointer; font-size: 0.85rem; color: #9ca3af; }
         .status-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
         .status-text { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
         .detail-text { font-size: 0.8rem; color: var(--text-sub); }
 
-        /* 상태별 색상 */
         .status-delivered .status-text { color: var(--success); }
         .status-error .status-text { color: var(--danger); }
 
-        /* 액션 버튼 */
         .actions { display: flex; flex-direction: column; gap: 6px; }
-        .actions button { 
-            padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; 
-            font-size: 0.8rem; font-weight: 500; white-space: nowrap;
-        }
+        .actions button { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
         .btn-track { background-color: #eff6ff; color: var(--primary); }
         .btn-delete { background-color: #fef2f2; color: var(--danger); }
-        .btn-track:hover { background-color: #dbeafe; }
-        .btn-delete:hover { background-color: #fee2e2; }
 
         .empty-msg { text-align: center; padding: 50px 0; color: #d1d5db; font-size: 0.95rem; }
-
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: white; padding: 12px 24px;
-            border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000;
-        }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
@@ -121,7 +124,7 @@
         <div class="header">
             <h1>📦 택배 비서</h1>
         </div>
-        
+
         <div class="carrier-info">
             <span class="carrier-pill">지원: CJ대한통운 · 우체국 · 한진 · 롯데 · 로젠</span>
         </div>
@@ -129,6 +132,20 @@
         <form id="trackingForm">
             <div class="input-group">
                 <input type="tel" id="trackingNumber" placeholder="운송장 번호 (- 없이 숫자만)" required autocomplete="off">
+                
+                <div id="predictionArea" class="prediction-area">
+                    <span id="predictionText">예상: CJ대한통운</span>
+                    <button type="button" class="btn-change" onclick="showSelectBox()">변경</button>
+                </div>
+
+                <select id="carrierSelect">
+                    <option value="kr.cjlogistics">CJ 대한통운</option>
+                    <option value="kr.epost">우체국 택배</option>
+                    <option value="kr.hanjin">한진 택배</option>
+                    <option value="kr.lotteglogis">롯데 택배</option>
+                    <option value="kr.logen">로젠 택배</option>
+                </select>
+
                 <input type="text" id="trackingMemo" placeholder="메모 (선택)">
             </div>
             <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
@@ -142,20 +159,56 @@
         const trackingList = document.getElementById('tracking-list');
         const addBtn = document.getElementById('addBtn');
         const toast = document.getElementById('toast');
+        const numInput = document.getElementById('trackingNumber');
+        const predictionArea = document.getElementById('predictionArea');
+        const predictionText = document.getElementById('predictionText');
+        const carrierSelect = document.getElementById('carrierSelect');
+
+        let currentCarrierId = 'kr.cjlogistics';
 
         const carrierInfo = {
-            'kr.cjlogistics': { name: '대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
+            'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
             'kr.epost': { name: '우체국', url: 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' },
             'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblNum=' },
             'kr.lotteglogis': { name: '롯데', url: 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=' },
             'kr.logen': { name: '로젠', url: 'https://www.ilogen.com/m/personal/trace/' }
         };
 
-        // 페이지 로드 시 자동 실행
         document.addEventListener('DOMContentLoaded', refreshAll);
 
-        document.getElementById('trackingNumber').addEventListener('input', e => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        numInput.addEventListener('input', e => {
+            const val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val;
+
+            if(carrierSelect.style.display === 'block') return;
+
+            if (val.length >= 9) {
+                predictCarrier(val);
+                predictionArea.classList.add('show');
+            } else {
+                predictionArea.classList.remove('show');
+            }
+        });
+
+        function predictCarrier(number) {
+            // 13자리는 우체국일 확률 높음, 나머지는 일단 CJ로 예상
+            if (number.length === 13) {
+                currentCarrierId = 'kr.epost';
+            } else {
+                currentCarrierId = 'kr.cjlogistics';
+            }
+            predictionText.innerText = `예상: ${carrierInfo[currentCarrierId].name}`;
+            carrierSelect.value = currentCarrierId; 
+        }
+
+        window.showSelectBox = function() {
+            predictionArea.classList.remove('show'); 
+            carrierSelect.style.display = 'block';   
+            carrierSelect.classList.add('show');
+        }
+
+        carrierSelect.addEventListener('change', (e) => {
+            currentCarrierId = e.target.value;
         });
 
         async function fetchWithProxy(targetUrl, timeout = 5000) {
@@ -172,42 +225,57 @@
             }
         }
 
-        async function findCarrier(number) {
-            let checkList = Object.keys(carrierInfo);
-            if (number.length === 13) checkList = ['kr.epost', ...checkList.filter(c => c !== 'kr.epost')];
-            else if ([10, 12].includes(number.length)) checkList = ['kr.cjlogistics', 'kr.hanjin', 'kr.lotteglogis', ...checkList.filter(c => !['kr.cjlogistics', 'kr.hanjin', 'kr.lotteglogis'].includes(c))];
-
-            try {
-                return await Promise.any(checkList.map(async (carrier) => {
-                    const res = await fetchWithProxy(`https://apis.tracker.delivery/carriers/${carrier}/tracks/${number}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.state && data.state.id !== 'not_found') return carrier;
-                    }
-                    throw new Error();
-                }));
-            } catch { return null; }
-        }
-
         document.getElementById('trackingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const number = document.getElementById('trackingNumber').value;
+            const number = numInput.value;
             const memo = document.getElementById('trackingMemo').value.trim();
 
             if (number.length < 9) return alert('번호를 확인해주세요.');
+            
             addBtn.disabled = true; addBtn.innerText = "확인 중...";
 
-            const carrier = await findCarrier(number);
-            const finalCarrier = carrier || ((number.length === 13) ? 'kr.epost' : 'kr.cjlogistics');
+            let isValid = false;
 
-            if (!carrier && !confirm('배송 정보를 찾을 수 없습니다.\n그래도 등록하시겠습니까?')) {
-                addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
-                return;
+            // 1. 실제 조회 시도
+            try {
+                const res = await fetchWithProxy(`https://apis.tracker.delivery/carriers/${currentCarrierId}/tracks/${number}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.state && data.state.id !== 'not_found') {
+                        isValid = true;
+                    }
+                }
+            } catch (err) {
+                console.log("조회 실패 (네트워크 또는 차단)");
             }
 
-            saveItem(finalCarrier, number, memo);
+            // 2. 롯데택배이거나 조회가 안될 때 처리
+            if (!isValid) {
+                const carrierName = carrierInfo[currentCarrierId].name;
+                
+                let msg = `[${carrierName}] 조회 데이터가 없습니다.\n\n`;
+                if(currentCarrierId === 'kr.lotteglogis') {
+                    msg += `※ 롯데택배는 앱 내 조회가 자주 차단됩니다.\n하지만 등록해두시면 [위치] 버튼으로\n공식 홈페이지 연결이 가능합니다.\n\n`;
+                } else {
+                    msg += `1. 운송장 번호가 맞나요?\n2. 택배사를 올바르게 선택했나요?\n\n`;
+                }
+                msg += `그래도 등록하시겠습니까?`;
+
+                if (!confirm(msg)) {
+                    addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
+                    return;
+                }
+            }
+
+            // 3. 등록
+            saveItem(currentCarrierId, number, memo);
+            
             addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
-            document.getElementById('trackingForm').reset();
+            
+            numInput.value = '';
+            document.getElementById('trackingMemo').value = '';
+            predictionArea.classList.remove('show');
+            carrierSelect.style.display = 'none';
         });
 
         function saveItem(carrier, number, memo) {
@@ -283,11 +351,12 @@
 
             } catch (e) {
                 item.lastState = '연동 지연';
-                item.lastDetail = '잠시 후 다시 시도해주세요';
+                item.lastDetail = '앱에서 [위치] 버튼을 눌러보세요';
                 item.statusRank = 3;
 
                 if(el) {
                     el.querySelector('.status-text').innerText = '연동 지연';
+                    el.querySelector('.detail-text').innerText = '앱에서 [위치] 버튼을 눌러보세요';
                     el.classList.add('status-error');
                 }
             }
