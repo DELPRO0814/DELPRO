@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스마트 택배 비서</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,7 +29,7 @@
 
             <form id="trackingForm">
                 <div class="input-group">
-                    <input type="text" id="trackingNumber" placeholder="운송장 번호 (숫자/영문)" required autocomplete="off">
+                    <input type="text" id="trackingNumber" placeholder="운송장 번호 (문자 전체 붙여넣기 가능)" required autocomplete="off">
                     
                     <div id="predictionArea" class="prediction-area">
                         <span id="predictionText">예상: CJ대한통운</span>
@@ -58,6 +56,14 @@
                     </select>
 
                     <input type="text" id="trackingMemo" placeholder="메모 (선택)">
+                    
+                    <input 
+                        type="text" 
+                        id="deliveryDate" 
+                        placeholder="주문 날짜 (선택)" 
+                        onfocus="(this.type='date')" 
+                        onblur="if(this.value===''){this.type='text'}"
+                    >
                 </div>
                 <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
             </form>
