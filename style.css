@@ -1,0 +1,187 @@
+:root {
+    --primary: #000000;       /* Apple Pro Black */
+    --bg: #F5F5F7;           /* Apple Web Background Gray */
+    --card: #FFFFFF;
+    --text-main: #1D1D1F;    /* Apple Typography Color */
+    --text-sub: #86868B;     /* Apple Subtext Color */
+    --input-bg: #E8E8ED;     /* iOS Input Background */
+    --border: #D2D2D7;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+body {
+    /* Apple System Font Stack */
+    font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; margin: 0; padding: 60px 20px;
+    background-color: var(--bg); line-height: 1.5; color: var(--text-main);
+}
+
+.container {
+    width: 100%; max-width: 460px; 
+    padding: 40px;
+    border-radius: 30px; 
+    background-color: rgba(255, 255, 255, 0.8); /* 반투명 */
+    
+    /* 애플 특유의 유리 질감 (Glassmorphism) */
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* 아주 부드러운 그림자 */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+
+.link-group { display: flex; gap: 14px; }
+.link-icon {
+    height: 40px; width: auto; border-radius: 10px;
+    cursor: pointer; transition: transform 0.2s;
+    /* 앱 아이콘 스타일 그림자 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+.link-icon:hover { transform: scale(1.05); }
+
+.carrier-info { text-align: center; margin-bottom: 35px; }
+.carrier-pill {
+    display: inline-block; font-size: 0.8rem; color: var(--text-sub);
+    background-color: rgba(0,0,0,0.03); padding: 8px 14px; border-radius: 99px; font-weight: 500;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; }
+input, select {
+    width: 100%; padding: 18px; border: none; /* 테두리 제거 */
+    border-radius: 14px; font-size: 1.05rem; outline: none;
+    background: var(--input-bg); /* iOS 회색 배경 */
+    color: var(--text-main);
+    transition: background 0.2s;
+}
+input::placeholder { color: #9CA3AF; }
+input:focus, select:focus {
+    background: #FFFFFF;
+    box-shadow: 0 0 0 2px #0071E3; /* Apple Focus Blue (포커스 때만 살짝) */
+}
+
+/* 예상 택배사 알림 (iOS Notification 스타일) */
+.prediction-area {
+    display: flex; justify-content: space-between; align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 12px 18px; border-radius: 14px;
+    font-size: 0.95rem; color: #0071E3; font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.04);
+    display: none; margin-top: -5px; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.prediction-area.show { display: flex; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.btn-change {
+    background: rgba(0,0,0,0.05); border: none; color: var(--text-sub);
+    padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+}
+#carrierSelect { display: none; }
+#carrierSelect.show { display: block; }
+
+/* [버튼] Apple 스타일 버튼 (Black Pill) */
+button.btn-add {
+    width: 100%; 
+    padding: 18px; 
+    border: none; 
+    
+    background-color: var(--primary); 
+    
+    color: white; 
+    border-radius: 16px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 1.05rem; 
+    
+    transition: transform 0.1s, background-color 0.2s;
+}
+button.btn-add:hover { background-color: #333333; }
+button.btn-add:active { transform: scale(0.98); }
+button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
+
+/* [핵심] iOS Segmented Control (설정 메뉴 스타일 탭) */
+.filter-box { 
+    margin-top: 40px; 
+    margin-bottom: 20px; 
+    padding: 3px; 
+    background: #7676801f; /* iOS 투명 회색 */
+    border-radius: 10px; 
+}
+
+.filter-tabs {
+    display: flex; position: relative;
+    border-radius: 8px;
+    height: 32px; /* iOS 표준 높이 */
+}
+
+.filter-btn {
+    flex: 1; border: none; background: transparent;
+    font-size: 0.85rem; font-weight: 500; color: var(--text-main);
+    cursor: pointer; z-index: 2; transition: opacity 0.2s;
+    line-height: 32px; padding: 0;
+}
+.filter-btn:hover { opacity: 0.7; }
+.filter-btn.active { font-weight: 600; }
+
+/* 하얀색 글라이더 (그림자 디테일 중요) */
+.tab-glider {
+    position: absolute; top: 0; left: 0; 
+    height: 100%; width: 33.333%;
+    background-color: #FFFFFF; 
+    border-radius: 7px; /* 컨테이너보다 살짝 작게 */
+    
+    /* 애플 특유의 탭 그림자 */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+    
+    z-index: 1; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 리스트 스타일 */
+#tracking-list { list-style: none; padding: 0; margin: 0; }
+#tracking-list li {
+    background-color: #FFFFFF; 
+    padding: 24px; 
+    border-radius: 18px; /* 더 둥글게 */
+    margin-bottom: 16px; display: flex;
+    justify-content: space-between; align-items: flex-start;
+    
+    /* 테두리 대신 그림자로 구분 */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    border: 1px solid rgba(0,0,0,0.03);
+    
+    transition: transform 0.2s;
+}
+#tracking-list li:hover { transform: scale(1.01); }
+
+.info-area { flex-grow: 1; min-width: 0; margin-right: 20px; }
+.item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.item-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.carrier-badge { font-size: 0.75rem; background: #F2F2F7; color: #6e6e73; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+
+.meta-row { display: flex; flex-direction: column; gap: 4px; }
+.number { text-decoration: none; cursor: pointer; font-size: 0.9rem; color: #86868B; transition: color 0.2s; }
+.number:hover { color: var(--text-main); text-decoration: underline; }
+
+.status-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.status-text { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
+.detail-text { font-size: 0.85rem; color: var(--text-sub); }
+
+/* 상태 컬러 (애플 스타일은 텍스트 색을 너무 알록달록하게 쓰지 않음) */
+.status-delivered .status-text { color: #34C759; } /* Apple Green */
+.status-error .status-text { color: #FF3B30; }    /* Apple Red */
+.status-global .status-text { color: #AF52DE; }   /* Apple Purple */
+
+.actions { display: flex; flex-direction: column; gap: 8px; }
+.actions button { padding: 8px 16px; border: none; border-radius: 18px; cursor: pointer; font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+.btn-track { background-color: #F2F2F7; color: var(--text-main); }
+.btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
+
+.empty-msg { text-align: center; padding: 60px 0; color: #86868B; font-size: 1rem; }
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
