@@ -19,7 +19,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// 현재 페이지 확인 (버튼 존재 여부로 판단)
+// 현재 페이지 요소 확인
 const loginBtn = document.getElementById('googleLoginBtn');
 const guestBtn = document.getElementById('guestLoginBtn'); 
 const logoutBtn = document.getElementById('logoutBtn');
@@ -35,32 +35,30 @@ onAuthStateChanged(auth, (user) => {
         // [회원] 로그인 상태
         currentUser = user;
         if (loginBtn) {
-            // 로그인 페이지라면 -> 앱 페이지로 이동
-            window.location.replace('index.html');
+            // 로그인 페이지라면 -> 메인 앱(루트)으로 이동
+            window.location.replace('/');
         } else {
-            // 앱 페이지라면 -> 데이터 구독 시작
+            // 앱 페이지라면 -> 데이터 구독
             subscribeMyTracks(user.uid);
         }
     } else {
-        // [비로그인 상태]
+        // [비로그인]
         const isGuest = localStorage.getItem('guestMode') === 'true';
 
         if (isGuest) {
             // [비회원 모드]
             if (loginBtn) {
-                // 로그인 페이지라면 -> 앱 페이지로 이동
-                window.location.replace('index.html');
+                // 로그인 페이지라면 -> 메인 앱(루트)으로 이동
+                window.location.replace('/');
             } else {
-                // 앱 페이지라면 -> 게스트 데이터 로드
                 loadGuestTracks();
             }
         } else {
             // [완전 비로그인]
             if (!loginBtn) {
-                // 앱 페이지라면 -> 로그인 페이지로 쫓아냄
-                window.location.replace('login.html');
+                // 앱 페이지라면 -> 로그인 폴더로 쫓아냄
+                window.location.replace('/login');
             }
-            // 로그인 페이지라면 대기
         }
     }
 });
@@ -68,15 +66,13 @@ onAuthStateChanged(auth, (user) => {
 // [로그인 페이지 로직]
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-        // 로그인 시도 시 게스트 모드 해제
         localStorage.removeItem('guestMode');
         signInWithPopup(auth, provider).catch((error) => alert("로그인 실패: " + error.message));
     });
 
     guestBtn.addEventListener('click', () => {
-        // 게스트 모드 설정 후 이동
         localStorage.setItem('guestMode', 'true');
-        window.location.replace('index.html');
+        window.location.replace('/');
     });
 }
 
@@ -86,26 +82,24 @@ if (logoutBtn) {
         if (localStorage.getItem('guestMode') === 'true') {
             if(confirm("비회원 모드를 종료하시겠습니까?")) {
                 localStorage.removeItem('guestMode');
-                window.location.replace('login.html');
+                window.location.replace('/login');
             }
         } else {
             if(confirm("로그아웃 하시겠습니까?")) {
                 signOut(auth).then(() => {
-                    window.location.replace('login.html');
+                    window.location.replace('/login');
                 });
             }
         }
     });
 
-    // 폼 제출 등 앱 기능은 앱 페이지에서만 동작
+    // 앱 페이지 기능들
     const trackingForm = document.getElementById('trackingForm');
     if (trackingForm) {
         trackingForm.addEventListener('submit', handleAddSubmit);
-        // ... 기타 초기화 로직
         document.getElementById('trackingNumber').addEventListener('input', handleSmartInput);
         document.getElementById('carrierSelect').addEventListener('change', (e) => currentCarrierId = e.target.value);
         
-        // 필터 버튼
         document.getElementById('filter-all').onclick = (e) => setFilter(e, 'all');
         document.getElementById('filter-active').onclick = (e) => setFilter(e, 'active');
         document.getElementById('filter-completed').onclick = (e) => setFilter(e, 'completed');
@@ -113,10 +107,8 @@ if (logoutBtn) {
 }
 
 // ------------------------------------------------------------
-// [아래는 기존 로직 함수들]
+// [기능 함수들]
 // ------------------------------------------------------------
-
-// 택배사 매핑 정보 등
 const carrierKeywords = { 'kr.cjlogistics': ['CJ', '대한통운'], 'kr.epost': ['우체국', '등기'], 'kr.hanjin': ['한진'], 'kr.lotteglogis': ['롯데'], 'kr.logen': ['로젠'], 'kr.cupost': ['CU', '편의점'], 'kr.cvsnet': ['GS', '반값'], 'kr.kdexp': ['경동'], 'kr.daesin': ['대신'] };
 const carrierInfo = {
     'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
@@ -214,7 +206,6 @@ function createDOM(item) {
     list.appendChild(li);
 }
 
-// 이벤트 핸들러 분리
 async function handleAddSubmit(e) {
     e.preventDefault();
     const btn = document.getElementById('addBtn');
@@ -327,14 +318,11 @@ async function checkDeliveryStatus(item) {
                         lastState: stateText, lastDetail: detail, statusRank: rank, lastUpdate: Date.now()
                     });
                 } else {
-                    // 게스트 로컬 업데이트는 화면만 갱신 (저장 X) 하거나 저장 O
-                    // 여기선 저장
                     let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
                     const t = items.find(i => i.id === item.id);
                     if(t) {
                         t.lastState = stateText; t.lastDetail = detail; t.statusRank = rank; t.lastUpdate = Date.now();
                         localStorage.setItem('guestTracks', JSON.stringify(items));
-                        // 간단 화면 갱신
                         const el = document.getElementById(`item-${item.docId}`);
                         if(el) {
                             el.querySelector('.status-text').innerText = stateText;
