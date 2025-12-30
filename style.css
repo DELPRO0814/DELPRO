@@ -38,7 +38,8 @@ body {
     min-height: 0; margin-top: 20px; 
 }
 
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+/* 요소 간격: 쫀쫀하게 유지 */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 
 .link-group { display: flex; gap: 14px; }
@@ -49,13 +50,13 @@ h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 }
 .link-icon:hover { transform: scale(1.05); }
 
-.carrier-info { text-align: center; margin-bottom: 30px; }
+.carrier-info { text-align: center; margin-bottom: 20px; }
 .carrier-pill {
     display: inline-block; font-size: 0.8rem; color: var(--text-sub);
     background-color: rgba(0,0,0,0.03); padding: 8px 14px; border-radius: 99px; font-weight: 500;
 }
 
-.input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; }
+.input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 
 input, select {
     width: 100%; padding: 18px; border: none;
@@ -147,20 +148,17 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .info-area { flex-grow: 1; min-width: 0; margin-right: 20px; }
 .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
-/* [수정됨] 제목은 수정 가능하므로 마우스 커서 변경 */
 .item-title { 
     font-size: 1.1rem; font-weight: 600; color: var(--text-main); 
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
     cursor: pointer;
 }
-/* 제목에 마우스 올리면 '수정' 느낌 아이콘 표시 (옵션) */
 .item-title:hover { text-decoration: underline; text-decoration-style: dotted; }
 
 .carrier-badge { font-size: 0.75rem; background: #F2F2F7; color: #6e6e73; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
 
-/* [추가됨] D-Day 배지 스타일 */
 .d-day-badge {
-    font-size: 0.7rem; color: #fff; background-color: #FF2D55; /* Apple Pink */
+    font-size: 0.7rem; color: #fff; background-color: #FF2D55; 
     padding: 2px 8px; border-radius: 10px; font-weight: 700;
     margin-left: 5px; vertical-align: middle;
 }
@@ -195,10 +193,20 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
         max-width: 1000px; height: 90vh;
         padding: 40px; gap: 50px;
     }
+    
     .input-section {
         width: 360px; flex-shrink: 0; height: 100%;
         overflow-y: auto; padding: 4px 10px 4px 4px;
+        
+        /* [원복됨] 다시 중앙 정렬로 합치기 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+        
+        /* [유지됨] 시각적 보정 (아래쪽 쿠션) */
+        padding-bottom: 80px; 
     }
+    
     .input-section::-webkit-scrollbar { width: 0; }
     .list-section { flex-grow: 1; margin-top: 0; height: 100%; }
     .filter-box { margin-bottom: 20px; }
