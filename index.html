@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 택배 비서</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <div class="login-icon">📦</div>
+            <h1>택배 비서</h1>
+            <p>PC와 모바일에서 데이터를<br>실시간으로 연동하세요.</p>
+            <button id="googleLoginBtn" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                Google 계정으로 시작
+            </button>
+        </div>
+    </div>
+
+    <div id="app-container" class="container" style="display: none;">
+        
+        <div class="input-section">
+            <div class="header">
+                <h1>📦 택배 비서</h1>
+                <div class="header-right">
+                    <button id="logoutBtn" class="btn-logout">로그아웃</button>
+                </div>
+            </div>
+
+            <div class="link-group">
+                <a href="https://7customs.com/" target="_blank" title="통관알리미">
+                    <img src="img/tong.png" alt="통관" class="link-icon">
+                </a>
+                <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" title="유니패스">
+                    <img src="img/uni.png" alt="유니패스" class="link-icon">
+                </a>
+            </div>
+
+            <div class="carrier-info">
+                <span class="carrier-pill">지원: 국내 5사 · 알리 · 편의점 · 화물</span>
+            </div>
+
+            <form id="trackingForm">
+                <div class="input-group">
+                    <input type="text" id="trackingNumber" placeholder="운송장 번호 (문자 전체 붙여넣기 가능)" required autocomplete="off">
+                    
+                    <div id="predictionArea" class="prediction-area">
+                        <span id="predictionText">예상: CJ대한통운</span>
+                        <button type="button" class="btn-change" onclick="window.showSelectBox()">변경</button>
+                    </div>
+
+                    <select id="carrierSelect">
+                        <optgroup label="주요 택배사">
+                            <option value="kr.cjlogistics">CJ 대한통운</option>
+                            <option value="kr.epost">우체국 택배</option>
+                            <option value="kr.hanjin">한진 택배</option>
+                            <option value="kr.lotteglogis">롯데 택배</option>
+                            <option value="kr.logen">로젠 택배</option>
+                        </optgroup>
+                        <optgroup label="해외 직구">
+                            <option value="global.aliexpress">알리익스프레스 (17TRACK)</option>
+                        </optgroup>
+                        <optgroup label="편의점/화물">
+                            <option value="kr.cupost">CU 편의점</option>
+                            <option value="kr.cvsnet">GS25</option>
+                            <option value="kr.kdexp">경동택배</option>
+                            <option value="kr.daesin">대신택배</option>
+                        </optgroup>
+                    </select>
+
+                    <input type="text" id="trackingMemo" placeholder="메모 (선택)">
+                    
+                    <input 
+                        type="text" 
+                        id="deliveryDate" 
+                        placeholder="주문 날짜 (선택)" 
+                        onfocus="(this.type='date')" 
+                        onblur="if(this.value===''){this.type='text'}"
+                    >
+                </div>
+                <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
+            </form>
+        </div>
+
+        <div class="list-section">
+            <div class="filter-box">
+                <div class="filter-tabs">
+                    <div id="tab-glider" class="tab-glider"></div>
+                    <button class="filter-btn active" id="filter-all">전체</button>
+                    <button class="filter-btn" id="filter-active">배송 중</button>
+                    <button class="filter-btn" id="filter-completed">배송 완료</button>
+                </div>
+            </div>
+
+            <ul id="tracking-list"></ul>
+        </div>
+
+    </div>
+    <div id="toast" class="toast">복사되었습니다</div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>
