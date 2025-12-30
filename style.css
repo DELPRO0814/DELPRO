@@ -10,14 +10,20 @@
 
 * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
-/* [모바일 기본] 스크롤 허용 */
+/* [모바일 기본] 완전한 스크롤 허용 (Block Layout) */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    display: flex; justify-content: center; 
+    
+    /* [수정] flex 제거 -> 일반 웹페이지처럼 동작 */
+    display: block; 
+    
     min-height: 100vh; 
     margin: 0; padding: 20px; 
     background-color: var(--bg); line-height: 1.5; color: var(--text-main);
+    
+    /* 전체 스크롤 확실하게 허용 */
     overflow-y: auto; 
+    
     -webkit-user-select: none; user-select: none;
 }
 
@@ -55,28 +61,41 @@ body {
 
 .container {
     width: 100%; max-width: 460px; 
-    height: auto; min-height: 80vh; 
+    
+    /* [수정] 모바일에서는 높이 제한 없이 쭉 늘어남 */
+    height: auto; 
+    min-height: 80vh; 
+    
+    /* 가운데 정렬 (Block 방식) */
+    margin: 0 auto; 
+    
     padding: 30px;
     border-radius: 30px; 
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.6);
-    display: flex; flex-direction: column; 
+    
+    /* [수정] flex 제거 -> 요소들이 위에서 아래로 자연스럽게 쌓임 */
+    display: block; 
+    
     overflow: visible; 
 }
 
-.input-section { width: 100%; flex-shrink: 0; }
+.input-section { width: 100%; flex-shrink: 0; display: block; }
+
 .list-section { 
-    width: 100%; flex-grow: 1; display: flex; flex-direction: column;
-    min-height: 0; margin-top: 20px; 
+    width: 100%; 
+    /* [수정] flex 관련 속성 제거 */
+    display: block;
+    margin-top: 20px; 
 }
 
 /* 로고와 로그아웃 버튼 배치 수정 */
 .header { display: flex; align-items: center; margin-bottom: 15px; }
 h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 
-.link-group { display: flex; gap: 14px; margin-bottom: 20px; } /* [수정] 아래 여백 추가 */
+.link-group { display: flex; gap: 14px; margin-bottom: 20px; }
 .link-icon {
     height: 40px; width: auto; border-radius: 10px;
     cursor: pointer; transition: transform 0.2s;
@@ -160,7 +179,9 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 
 #tracking-list { 
     list-style: none; padding: 0; margin: 0;
-    height: auto; overflow: visible; 
+    /* [수정] 높이 제한 완전 해제 */
+    height: auto; 
+    overflow: visible; 
 }
 
 #tracking-list li {
@@ -209,23 +230,28 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 
 .empty-msg { 
-    flex-grow: 1; display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     color: #86868B; font-size: 1rem; 
     min-height: 100px;
 }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 
 /* =========================================
-   [반응형] PC & 태블릿
+   [반응형] PC & 태블릿 (가로 폭 768px 이상)
+   여기서만 "고정된 앱 박스 + 내부 스크롤" 적용
    ========================================= */
 @media (min-width: 768px) {
     body { 
+        /* PC는 중앙 정렬 & 스크롤 막기 (앱 스타일) */
+        display: flex; 
         align-items: center; 
         height: 100vh; padding: 40px; 
         overflow: hidden; 
     }
 
     .container {
+        /* PC는 Flexbox 복귀 */
+        display: flex; 
         flex-direction: row; 
         align-items: flex-start;
         max-width: 1000px; 
@@ -240,7 +266,12 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
         display: block; 
     }
     .input-section::-webkit-scrollbar { width: 0; }
-    .list-section { flex-grow: 1; margin-top: 0; height: 100%; }
+    
+    .list-section { 
+        flex-grow: 1; margin-top: 0; height: 100%;
+        /* PC에서는 내부 요소 정렬을 위해 flex 가능 */
+        display: flex; flex-direction: column;
+    }
     .filter-box { margin-bottom: 20px; }
 
     #tracking-list {
