@@ -186,10 +186,17 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 
+/* =========================================
+   [반응형] PC & 태블릿 (가로 폭 768px 이상)
+   ========================================= */
 @media (min-width: 768px) {
     body { padding: 40px; }
     .container {
-        flex-direction: row; align-items: flex-start;
+        flex-direction: row; 
+        
+        /* [핵심] 상단 정렬 (왼쪽 입력창, 오른쪽 리스트 모두 위에서 시작) */
+        align-items: flex-start;
+        
         max-width: 1000px; height: 90vh;
         padding: 40px; gap: 50px;
     }
@@ -198,13 +205,8 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
         width: 360px; flex-shrink: 0; height: 100%;
         overflow-y: auto; padding: 4px 10px 4px 4px;
         
-        /* [원복됨] 다시 중앙 정렬로 합치기 */
-        display: flex;
-        flex-direction: column;
-        justify-content: center; 
-        
-        /* [유지됨] 시각적 보정 (아래쪽 쿠션) */
-        padding-bottom: 80px; 
+        /* [핵심] 중앙 정렬 코드 제거 -> 기본값(Top)으로 돌아감 */
+        display: block; 
     }
     
     .input-section::-webkit-scrollbar { width: 0; }
