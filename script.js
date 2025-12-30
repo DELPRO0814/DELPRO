@@ -1,11 +1,9 @@
-// [Firebase 라이브러리 가져오기]
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ▼▼▼ [적용 완료] 사용자님의 프로젝트 설정 ▼▼▼
 const firebaseConfig = {
   apiKey: "AIzaSyBknuhKeqZSGx-3gz5lPRr9eryjyKoC2UY",
   authDomain: "kr-shiptrack.firebaseapp.com",
@@ -13,20 +11,18 @@ const firebaseConfig = {
   storageBucket: "kr-shiptrack.firebasestorage.app",
   messagingSenderId: "127457701246",
   appId: "1:127457701246:web:c7f7f6d38cf574cb83572f",
-  measurementId: "G-5XHX2RG4R0" // measurement -> measurementId로 표준 이름 사용 (상관은 없음)
+  measurementId: "G-5XHX2RG4R0"
 };
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-// Firebase 초기화
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// DOM 요소
 const loginScreen = document.getElementById('login-screen');
 const appContainer = document.getElementById('app-container');
 const loginBtn = document.getElementById('googleLoginBtn');
+const guestBtn = document.getElementById('guestLoginBtn'); // 비회원 버튼
 const logoutBtn = document.getElementById('logoutBtn');
 
 const trackingList = document.getElementById('tracking-list');
@@ -41,11 +37,11 @@ const carrierSelect = document.getElementById('carrierSelect');
 const tabGlider = document.getElementById('tab-glider');
 
 let currentUser = null;
+let isGuest = false; // 비회원 모드 여부
 let currentFilter = 'all'; 
 let currentCarrierId = 'kr.cjlogistics';
-let unsubscribe = null; // 실시간 리스너 해제용
+let unsubscribe = null;
 
-// [택배사 정보 및 매핑]
 const carrierKeywords = {
     'kr.cjlogistics': ['CJ', '대한통운', '씨제이'],
     'kr.epost': ['우체국', '등기', 'EMS', 'POST'],
@@ -72,67 +68,95 @@ const carrierInfo = {
 };
 
 // ========================
-// 1. 인증 로직 (로그인/로그아웃)
+// 1. 인증 및 상태 관리 (하이브리드)
 // ========================
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // 로그인 성공
+        // [회원] 로그인 성공
         currentUser = user;
+        isGuest = false;
         loginScreen.style.display = 'none';
-        appContainer.style.display = 'flex';
-        // 내 데이터 실시간 구독 시작
+        appContainer.style.display = 'flex'; // PC에선 flex, 모바일에선 css media query로 제어됨
         subscribeMyTracks(user.uid);
     } else {
-        // 로그아웃 상태
-        currentUser = null;
-        loginScreen.style.display = 'flex';
-        appContainer.style.display = 'none';
-        if (unsubscribe) unsubscribe(); // 리스너 해제
+        // [비회원 상태]
+        if (isGuest) {
+            // 비회원으로 입장한 경우
+            currentUser = null;
+            loginScreen.style.display = 'none';
+            appContainer.style.display = 'flex';
+            loadGuestTracks(); // 로컬 스토리지 로드
+        } else {
+            // 아예 초기화면
+            currentUser = null;
+            loginScreen.style.display = 'flex';
+            appContainer.style.display = 'none';
+            if (unsubscribe) unsubscribe();
+        }
     }
 });
 
 loginBtn.addEventListener('click', () => {
+    isGuest = false;
     signInWithPopup(auth, provider).catch((error) => alert("로그인 실패: " + error.message));
 });
 
+// [추가] 비회원 로그인 버튼
+guestBtn.addEventListener('click', () => {
+    isGuest = true;
+    loginScreen.style.display = 'none';
+    appContainer.style.display = 'flex';
+    loadGuestTracks();
+});
+
 logoutBtn.addEventListener('click', () => {
-    if(confirm("로그아웃 하시겠습니까?")) signOut(auth);
+    if (isGuest) {
+        if(confirm("비회원 모드를 종료하시겠습니까?")) {
+            isGuest = false;
+            location.reload(); // 새로고침해서 초기 화면으로
+        }
+    } else {
+        if(confirm("로그아웃 하시겠습니까?")) signOut(auth);
+    }
 });
 
 // ========================
-// 2. DB 실시간 연동 (Firestore)
+// 2. 데이터 불러오기 (DB vs Local)
 // ========================
 function subscribeMyTracks(uid) {
-    // users/{uid}/tracks 컬렉션을 구독 (최신순 정렬)
     const q = query(collection(db, "users", uid, "tracks"), orderBy("id", "desc"));
-    
     unsubscribe = onSnapshot(q, (snapshot) => {
         const items = [];
         snapshot.forEach((doc) => {
             items.push({ docId: doc.id, ...doc.data() });
         });
-        
-        // 데이터가 변경될 때마다 화면 갱신
         renderList(items);
-        
-        // 상태 업데이트 (백그라운드 조회) - 너무 잦은 호출 방지 필요하지만 일단 단순하게
         items.forEach(item => checkDeliveryStatus(item));
     });
+}
+
+function loadGuestTracks() {
+    // 로컬 스토리지에서 불러오기
+    const localData = JSON.parse(localStorage.getItem('guestTracks')) || [];
+    // 로컬 데이터는 docId가 없으므로 id를 docId로 사용
+    const items = localData.map(item => ({ docId: item.id, ...item }));
+    
+    // 최신순 정렬
+    items.sort((a, b) => b.id - a.id);
+    
+    renderList(items);
+    items.forEach(item => checkDeliveryStatus(item));
 }
 
 // ========================
 // 3. UI 렌더링
 // ========================
 function renderList(items) {
-    // 정렬: 배송중(1) -> 완료(2) -> 에러(3)
-    // (이미 DB에서 최신순으로 가져왔지만, 상태별로 다시 정렬하고 싶다면 아래 코드 사용)
     const sortedItems = items.sort((a, b) => (a.statusRank || 1) - (b.statusRank || 1));
-    
-    // 필터링
     const filteredItems = sortedItems.filter(item => {
         if (currentFilter === 'all') return true;
-        if (currentFilter === 'active') return item.statusRank !== 2; // 완료 아님
-        if (currentFilter === 'completed') return item.statusRank === 2; // 완료
+        if (currentFilter === 'active') return item.statusRank !== 2;
+        if (currentFilter === 'completed') return item.statusRank === 2;
         return true;
     });
 
@@ -141,17 +165,13 @@ function renderList(items) {
         trackingList.innerHTML = '<div class="empty-msg">내역이 없습니다</div>';
         return;
     }
-
-    filteredItems.forEach(item => {
-        createDOM(item);
-    });
+    filteredItems.forEach(item => createDOM(item));
 }
 
 function createDOM(item) {
     const info = carrierInfo[item.carrier] || { name: '택배', url: '#' };
     const displayTitle = (item.memo && item.memo.trim()) ? item.memo : item.number;
 
-    // D-Day
     let dDayTag = '';
     if (item.startDate) {
         const start = new Date(item.startDate);
@@ -173,7 +193,7 @@ function createDOM(item) {
     const savedDetail = item.lastDetail || '';
 
     const li = document.createElement('li');
-    li.id = `item-${item.docId}`; // Firestore 문서 ID 사용
+    li.id = `item-${item.docId}`;
     if(statusClass) li.className = statusClass;
 
     li.innerHTML = `
@@ -197,23 +217,22 @@ function createDOM(item) {
         </div>
     `;
 
-    // 이벤트 리스너 연결
     li.querySelector('.item-title').onclick = () => editMemo(item);
     li.querySelector('.number').onclick = () => copy(item.number);
     li.querySelector('.btn-track').onclick = () => window.open(info.url + item.number, '_blank');
-    li.querySelector('.btn-delete').onclick = () => deleteTrack(item.docId);
+    li.querySelector('.btn-delete').onclick = () => deleteTrack(item); // item 객체 전체 전달
 
     trackingList.appendChild(li);
 }
 
 // ========================
-// 4. 데이터 조작 (CRUD)
+// 4. 데이터 조작 (CRUD) - 하이브리드 적용
 // ========================
 
 // [추가]
 document.getElementById('trackingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentUser) return alert("로그인이 필요합니다.");
+    if (!currentUser && !isGuest) return alert("로그인 또는 비회원 시작이 필요합니다.");
 
     const number = numInput.value;
     const memo = memoInput.value.trim();
@@ -222,49 +241,83 @@ document.getElementById('trackingForm').addEventListener('submit', async (e) => 
     if (number.length < 9) return alert('번호를 확인해주세요.');
     addBtn.disabled = true; addBtn.innerText = "저장 중...";
 
-    // DB 저장
-    try {
-        await addDoc(collection(db, "users", currentUser.uid, "tracks"), {
-            id: Date.now(), // 정렬용 타임스탬프
-            carrier: currentCarrierId,
-            number: number,
-            memo: memo,
-            startDate: startDate,
-            statusRank: 1,
-            lastState: '등록됨',
-            lastDetail: '',
-            lastUpdate: 0
-        });
+    const newItem = {
+        id: Date.now(),
+        carrier: currentCarrierId,
+        number: number,
+        memo: memo,
+        startDate: startDate,
+        statusRank: 1,
+        lastState: '등록됨',
+        lastDetail: '',
+        lastUpdate: 0
+    };
+
+    if (currentUser) {
+        // [회원] DB 저장
+        try {
+            await addDoc(collection(db, "users", currentUser.uid, "tracks"), newItem);
+            finishAdd();
+        } catch (err) {
+            console.error(err);
+            alert("저장 실패");
+        }
+    } else {
+        // [비회원] 로컬 저장
+        const items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        items.push(newItem);
+        localStorage.setItem('guestTracks', JSON.stringify(items));
         finishAdd();
-    } catch (err) {
-        console.error(err);
-        alert("저장 실패 (Firestore 규칙을 확인하세요)");
-        addBtn.disabled = false;
+        loadGuestTracks(); // 화면 갱신
     }
+    
+    addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
 });
 
 // [삭제]
-async function deleteTrack(docId) {
+async function deleteTrack(item) {
     if(!confirm('삭제하시겠습니까?')) return;
-    try {
-        await deleteDoc(doc(db, "users", currentUser.uid, "tracks", docId));
-    } catch(e) { console.error(e); }
+    
+    if (currentUser) {
+        // [회원] DB 삭제
+        try {
+            await deleteDoc(doc(db, "users", currentUser.uid, "tracks", item.docId));
+        } catch(e) { console.error(e); }
+    } else {
+        // [비회원] 로컬 삭제
+        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        items = items.filter(i => i.id !== item.id);
+        localStorage.setItem('guestTracks', JSON.stringify(items));
+        loadGuestTracks();
+    }
 }
 
 // [수정]
 async function editMemo(item) {
     const newMemo = prompt('수정할 메모를 입력하세요:', item.memo || '');
     if (newMemo === null) return;
-    try {
-        await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
-            memo: newMemo
-        });
-    } catch(e) { console.error(e); }
+    
+    if (currentUser) {
+        // [회원] DB 수정
+        try {
+            await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
+                memo: newMemo
+            });
+        } catch(e) { console.error(e); }
+    } else {
+        // [비회원] 로컬 수정
+        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        const target = items.find(i => i.id === item.id);
+        if(target) {
+            target.memo = newMemo;
+            localStorage.setItem('guestTracks', JSON.stringify(items));
+            loadGuestTracks();
+        }
+    }
 }
 
-// [API 조회] - 조회 결과 DB 업데이트
+// [상태 조회 및 업데이트]
 async function checkDeliveryStatus(item) {
-    // 5분(300000ms) 이내에 조회했거나, 이미 배송완료(rank 2)면 조회 스킵
     if (Date.now() - (item.lastUpdate || 0) < 300000 || item.statusRank === 2) return;
     if (item.carrier === 'global.aliexpress') return;
 
@@ -281,14 +334,39 @@ async function checkDeliveryStatus(item) {
             if (stateText.includes('완료') || stateText.includes('도착')) rank = 2;
             else if (stateText.includes('실패')) rank = 3;
 
-            // 값이 다를 때만 DB 업데이트
+            // 상태가 변했으면 업데이트
             if (item.lastState !== stateText || item.lastDetail !== detail) {
-                await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
-                    lastState: stateText,
-                    lastDetail: detail,
-                    statusRank: rank,
-                    lastUpdate: Date.now()
-                });
+                if (currentUser) {
+                    // [회원] DB 업데이트
+                    await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
+                        lastState: stateText,
+                        lastDetail: detail,
+                        statusRank: rank,
+                        lastUpdate: Date.now()
+                    });
+                } else {
+                    // [비회원] 로컬 업데이트
+                    let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+                    const target = items.find(i => i.id === item.id);
+                    if (target) {
+                        target.lastState = stateText;
+                        target.lastDetail = detail;
+                        target.statusRank = rank;
+                        target.lastUpdate = Date.now();
+                        localStorage.setItem('guestTracks', JSON.stringify(items));
+                        // 로컬은 자동갱신 안되므로 화면 강제 리렌더링은 보류 (깜빡임 방지), 
+                        // 다음 로드 때 반영되거나 수동 새로고침시 반영됨. 
+                        // 즉각 반영 원하면 loadGuestTracks() 호출 가능하나 UX상 놔둠.
+                        // (원활한 UX를 위해 여기서 DOM만 살짝 바꿔줌)
+                        const el = document.getElementById(`item-${item.id}`);
+                        if(el) {
+                           el.querySelector('.status-text').innerText = stateText;
+                           el.querySelector('.detail-text').innerText = detail;
+                           if(rank===2) el.className='status-delivered';
+                           if(rank===3) el.className='status-error';
+                        }
+                    }
+                }
             }
         }
     } catch (e) { console.log("조회 패스"); }
@@ -298,7 +376,6 @@ async function checkDeliveryStatus(item) {
 // 5. 유틸리티 & 기타
 // ========================
 
-// 스마트 붙여넣기
 numInput.addEventListener('input', (e) => {
     let val = e.target.value;
     for (const [id, keywords] of Object.entries(carrierKeywords)) {
@@ -329,7 +406,6 @@ numInput.addEventListener('input', (e) => {
     }
 });
 
-// 탭 필터
 document.getElementById('filter-all').onclick = (e) => setFilter(e, 'all');
 document.getElementById('filter-active').onclick = (e) => setFilter(e, 'active');
 document.getElementById('filter-completed').onclick = (e) => setFilter(e, 'completed');
@@ -342,11 +418,10 @@ function setFilter(event, filterType) {
     const index = buttons.indexOf(event.target);
     tabGlider.style.transform = `translateX(${index * 100}%)`;
     
-    // 필터 변경 시 다시 구독 로직 호출 (화면 갱신)
     if(currentUser) subscribeMyTracks(currentUser.uid);
+    else if(isGuest) loadGuestTracks();
 }
 
-// 기타 UI 함수
 window.showSelectBox = function() {
     predictionArea.classList.remove('show'); 
     carrierSelect.style.display = 'block';   
@@ -355,7 +430,6 @@ window.showSelectBox = function() {
 carrierSelect.addEventListener('change', (e) => currentCarrierId = e.target.value);
 
 function finishAdd() {
-    addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
     numInput.value = '';
     memoInput.value = '';
     dateInput.value = ''; 
