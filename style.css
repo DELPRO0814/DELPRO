@@ -17,6 +17,10 @@ body {
     margin: 0; padding: 0; 
     background-color: var(--bg); line-height: 1.5; color: var(--text-main);
     overflow: hidden; 
+    
+    /* [핵심] 텍스트 드래그(선택) 막기 -> 앱 같은 느낌 */
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .container {
@@ -55,16 +59,21 @@ h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 }
 
 .input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; }
+
+/* [예외 처리] 입력창은 글씨를 써야 하니까 드래그 허용 */
 input, select {
     width: 100%; padding: 18px; border: none;
     border-radius: 14px; font-size: 1.05rem; outline: none;
     background: var(--input-bg); color: var(--text-main);
     transition: background 0.2s;
+    
+    -webkit-user-select: text;
+    user-select: text;
 }
 input::placeholder { color: #9CA3AF; }
 input:focus, select:focus {
     background: #FFFFFF;
-    box-shadow: 0 0 0 2px #0071E3; /* 여기서 생기는 그림자(2px)가 잘리지 않게 여백 필요 */
+    box-shadow: 0 0 0 2px #0071E3;
 }
 
 .prediction-area {
@@ -124,7 +133,6 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
     list-style: none; padding: 0; margin: 0;
     flex-grow: 1; overflow-y: auto; 
     padding-right: 4px; padding-bottom: 10px;
-    /* 왼쪽에도 살짝 여백을 줘서 리스트 선택 시 그림자 잘림 방지 */
     padding-left: 4px; 
 }
 #tracking-list::-webkit-scrollbar { width: 4px; }
@@ -190,8 +198,6 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
         flex-shrink: 0;
         height: 100%;
         overflow-y: auto; 
-        
-        /* [수정 포인트] 패딩을 추가하여 입력창 그림자가 잘리지 않게 함 */
         padding: 4px 10px 4px 4px;
     }
     
