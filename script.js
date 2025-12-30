@@ -27,26 +27,16 @@ const carrierInfo = {
 
 document.addEventListener('DOMContentLoaded', refreshAll);
 
-// [핵심] 슬라이딩 탭 애니메이션 로직
+// 탭 애니메이션 로직
 function setFilter(event, filterType) {
     currentFilter = filterType;
-    
-    // 1. 모든 버튼에서 active 제거
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // 2. 클릭한 버튼에 active 추가
-    const clickedBtn = event.target;
-    clickedBtn.classList.add('active');
+    event.target.classList.add('active');
 
-    // 3. 글라이더 이동 (버튼의 인덱스를 찾아서 x축 이동)
-    // 부모(.filter-tabs) 안에서 몇 번째 자식인지 확인 (글라이더 제외)
     const buttons = Array.from(document.querySelectorAll('.filter-btn'));
-    const index = buttons.indexOf(clickedBtn);
-    
-    // 글라이더는 width가 33.33%이므로, 인덱스 * 100% 만큼 이동하면 됨
+    const index = buttons.indexOf(event.target);
     tabGlider.style.transform = `translateX(${index * 100}%)`;
 
-    // 4. 리스트 새로고침
     const items = JSON.parse(localStorage.getItem('trackingItems')) || [];
     renderSortedList(items);
 }
@@ -84,7 +74,6 @@ carrierSelect.addEventListener('change', (e) => {
     currentCarrierId = e.target.value;
 });
 
-// 캐시 방지 프록시
 async function fetchWithProxy(targetUrl, timeout = 5000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -128,7 +117,7 @@ document.getElementById('trackingForm').addEventListener('submit', async (e) => 
 
     if (!isValid) {
         const carrierName = carrierInfo[currentCarrierId].name;
-        const msg = `[${carrierName}] 조회 데이터가 없습니다.\n\n1. 운송장 번호가 맞나요?\n2. 택배사를 올바르게 선택했나요?\n\n그래도 등록하시겠습니까?`;
+        const msg = `[${carrierName}] 조회 데이터가 없습니다.\n\n그래도 등록하시겠습니까?`;
         if (!confirm(msg)) {
             addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
             return;
@@ -145,7 +134,7 @@ function finishAdd() {
     document.getElementById('trackingMemo').value = '';
     predictionArea.classList.remove('show');
     carrierSelect.style.display = 'none';
-    carrierSelect.classList.remove('show'); // 클래스 제거
+    carrierSelect.classList.remove('show');
 }
 
 function saveItem(carrier, number, memo) {
@@ -164,10 +153,7 @@ async function refreshAll() {
         return;
     }
     renderSortedList(items);
-
-    for (const item of items) {
-        await updateItemStatus(item);
-    }
+    for (const item of items) { await updateItemStatus(item); }
     localStorage.setItem('trackingItems', JSON.stringify(items));
     renderSortedList(items); 
 }
@@ -191,7 +177,6 @@ function renderSortedList(items) {
 
 async function updateItemStatus(item) {
     const el = document.getElementById(`item-${item.id}`);
-
     if (item.carrier === 'global.aliexpress') {
         item.lastState = '해외 배송';
         item.lastDetail = '위치 버튼을 눌러 조회하세요';
@@ -199,15 +184,12 @@ async function updateItemStatus(item) {
         updateDOM(el, item, 'status-global');
         return; 
     }
-    
     try {
         const res = await fetchWithProxy(`https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`);
         const data = await res.json();
-        
         const stateText = data.state ? data.state.text : '상태 미등록';
         const location = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].location.name : '';
         const time = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].time.substring(5, 16).replace('T', ' ') : '';
-
         item.lastState = stateText;
         item.lastDetail = location ? `${time} | ${location}` : (time || '');
 
@@ -219,9 +201,7 @@ async function updateItemStatus(item) {
         let statusClass = '';
         if (rank === 2) statusClass = 'status-delivered';
         if (rank === 3) statusClass = 'status-error';
-        
         updateDOM(el, item, statusClass);
-
     } catch (e) {
         item.lastState = '연동 지연';
         item.lastDetail = '잠시 후 시도해주세요';
@@ -234,10 +214,8 @@ function updateDOM(el, item, statusClass) {
     if (!el) return;
     const statusTextEl = el.querySelector('.status-text');
     const detailTextEl = el.querySelector('.detail-text');
-    
     if(statusTextEl) statusTextEl.innerText = item.lastState;
     if(detailTextEl) detailTextEl.innerText = item.lastDetail;
-    
     el.className = ''; 
     if(statusClass) el.classList.add(statusClass);
 }
@@ -245,7 +223,6 @@ function updateDOM(el, item, statusClass) {
 function createDOM(item) {
     const info = carrierInfo[item.carrier] || { name: '택배' };
     const displayTitle = (item.memo && item.memo.trim()) ? item.memo : item.number;
-    
     let statusClass = '';
     if (item.carrier === 'global.aliexpress') statusClass = 'status-global';
     else {
@@ -253,10 +230,8 @@ function createDOM(item) {
         if(savedState.includes('완료') || savedState.includes('도착')) statusClass = 'status-delivered';
         else if(savedState.includes('지연') || savedState.includes('실패')) statusClass = 'status-error';
     }
-
     const savedState = item.lastState || '확인 중...';
     const savedDetail = item.lastDetail || '';
-
     const li = document.createElement('li');
     li.id = `item-${item.id}`;
     if(statusClass) li.className = statusClass;
@@ -286,8 +261,6 @@ function deleteItem(id) {
     if(!confirm('삭제하시겠습니까?')) return;
     const items = JSON.parse(localStorage.getItem('trackingItems')).filter(i => i.id !== id);
     localStorage.setItem('trackingItems', JSON.stringify(items));
-    
-    // 현재 탭 상태 유지하며 리스트 갱신
     const currentItems = JSON.parse(localStorage.getItem('trackingItems')) || [];
     renderSortedList(currentItems);
 }
