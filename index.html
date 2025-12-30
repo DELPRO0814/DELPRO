@@ -9,66 +9,71 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📦 택배 비서</h1>
-            <div class="link-group">
-                <a href="https://7customs.com/" target="_blank" title="통관알리미">
-                    <img src="img/tong.png" alt="통관" class="link-icon">
-                </a>
-                <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" title="유니패스">
-                    <img src="img/uni.png" alt="유니패스" class="link-icon">
-                </a>
-            </div>
-        </div>
-
-        <div class="carrier-info">
-            <span class="carrier-pill">지원: 국내 5사 · 알리 · 편의점 · 화물</span>
-        </div>
-
-        <form id="trackingForm">
-            <div class="input-group">
-                <input type="text" id="trackingNumber" placeholder="운송장 번호 (숫자/영문)" required autocomplete="off">
-                
-                <div id="predictionArea" class="prediction-area">
-                    <span id="predictionText">예상: CJ대한통운</span>
-                    <button type="button" class="btn-change" onclick="showSelectBox()">변경</button>
+        
+        <div class="input-section">
+            <div class="header">
+                <h1>📦 택배 비서</h1>
+                <div class="link-group">
+                    <a href="https://7customs.com/" target="_blank" title="통관알리미">
+                        <img src="img/tong.png" alt="통관" class="link-icon">
+                    </a>
+                    <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" title="유니패스">
+                        <img src="img/uni.png" alt="유니패스" class="link-icon">
+                    </a>
                 </div>
-
-                <select id="carrierSelect">
-                    <optgroup label="주요 택배사">
-                        <option value="kr.cjlogistics">CJ 대한통운</option>
-                        <option value="kr.epost">우체국 택배</option>
-                        <option value="kr.hanjin">한진 택배</option>
-                        <option value="kr.lotteglogis">롯데 택배</option>
-                        <option value="kr.logen">로젠 택배</option>
-                    </optgroup>
-                    <optgroup label="해외 직구">
-                        <option value="global.aliexpress">알리익스프레스 (17TRACK)</option>
-                    </optgroup>
-                    <optgroup label="편의점/화물">
-                        <option value="kr.cupost">CU 편의점</option>
-                        <option value="kr.cvsnet">GS25</option>
-                        <option value="kr.kdexp">경동택배</option>
-                        <option value="kr.daesin">대신택배</option>
-                    </optgroup>
-                </select>
-
-                <input type="text" id="trackingMemo" placeholder="메모 (선택)">
             </div>
-            <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
-        </form>
 
-        <div class="filter-box">
-            <div class="filter-tabs">
-                <div id="tab-glider" class="tab-glider"></div>
-                
-                <button class="filter-btn active" onclick="setFilter(event, 'all')">전체</button>
-                <button class="filter-btn" onclick="setFilter(event, 'active')">배송 중</button>
-                <button class="filter-btn" onclick="setFilter(event, 'completed')">배송 완료</button>
+            <div class="carrier-info">
+                <span class="carrier-pill">지원: 국내 5사 · 알리 · 편의점 · 화물</span>
             </div>
+
+            <form id="trackingForm">
+                <div class="input-group">
+                    <input type="text" id="trackingNumber" placeholder="운송장 번호 (숫자/영문)" required autocomplete="off">
+                    
+                    <div id="predictionArea" class="prediction-area">
+                        <span id="predictionText">예상: CJ대한통운</span>
+                        <button type="button" class="btn-change" onclick="showSelectBox()">변경</button>
+                    </div>
+
+                    <select id="carrierSelect">
+                        <optgroup label="주요 택배사">
+                            <option value="kr.cjlogistics">CJ 대한통운</option>
+                            <option value="kr.epost">우체국 택배</option>
+                            <option value="kr.hanjin">한진 택배</option>
+                            <option value="kr.lotteglogis">롯데 택배</option>
+                            <option value="kr.logen">로젠 택배</option>
+                        </optgroup>
+                        <optgroup label="해외 직구">
+                            <option value="global.aliexpress">알리익스프레스 (17TRACK)</option>
+                        </optgroup>
+                        <optgroup label="편의점/화물">
+                            <option value="kr.cupost">CU 편의점</option>
+                            <option value="kr.cvsnet">GS25</option>
+                            <option value="kr.kdexp">경동택배</option>
+                            <option value="kr.daesin">대신택배</option>
+                        </optgroup>
+                    </select>
+
+                    <input type="text" id="trackingMemo" placeholder="메모 (선택)">
+                </div>
+                <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
+            </form>
         </div>
 
-        <ul id="tracking-list"></ul>
+        <div class="list-section">
+            <div class="filter-box">
+                <div class="filter-tabs">
+                    <div id="tab-glider" class="tab-glider"></div>
+                    <button class="filter-btn active" onclick="setFilter(event, 'all')">전체</button>
+                    <button class="filter-btn" onclick="setFilter(event, 'active')">배송 중</button>
+                    <button class="filter-btn" onclick="setFilter(event, 'completed')">배송 완료</button>
+                </div>
+            </div>
+
+            <ul id="tracking-list"></ul>
+        </div>
+
     </div>
     <div id="toast" class="toast">복사되었습니다</div>
 
