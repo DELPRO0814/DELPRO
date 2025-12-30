@@ -22,7 +22,7 @@ const provider = new GoogleAuthProvider();
 const loginScreen = document.getElementById('login-screen');
 const appContainer = document.getElementById('app-container');
 const loginBtn = document.getElementById('googleLoginBtn');
-const guestBtn = document.getElementById('guestLoginBtn'); // 비회원 버튼
+const guestBtn = document.getElementById('guestLoginBtn'); 
 const logoutBtn = document.getElementById('logoutBtn');
 
 const trackingList = document.getElementById('tracking-list');
@@ -37,7 +37,7 @@ const carrierSelect = document.getElementById('carrierSelect');
 const tabGlider = document.getElementById('tab-glider');
 
 let currentUser = null;
-let isGuest = false; // 비회원 모드 여부
+let isGuest = false; 
 let currentFilter = 'all'; 
 let currentCarrierId = 'kr.cjlogistics';
 let unsubscribe = null;
@@ -68,29 +68,31 @@ const carrierInfo = {
 };
 
 // ========================
-// 1. 인증 및 상태 관리 (하이브리드)
+// 1. 인증 및 상태 관리 (수정됨)
 // ========================
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // [회원] 로그인 성공
         currentUser = user;
         isGuest = false;
         loginScreen.style.display = 'none';
-        appContainer.style.display = 'flex'; // PC에선 flex, 모바일에선 css media query로 제어됨
+        
+        // [수정] 강제 flex 제거 -> CSS가 알아서 block(모바일)/flex(PC) 결정하게 함
+        appContainer.style.removeProperty('display'); 
+        
         subscribeMyTracks(user.uid);
     } else {
-        // [비회원 상태]
         if (isGuest) {
-            // 비회원으로 입장한 경우
             currentUser = null;
             loginScreen.style.display = 'none';
-            appContainer.style.display = 'flex';
-            loadGuestTracks(); // 로컬 스토리지 로드
+            
+            // [수정] 여기도 수정
+            appContainer.style.removeProperty('display');
+            
+            loadGuestTracks(); 
         } else {
-            // 아예 초기화면
             currentUser = null;
             loginScreen.style.display = 'flex';
-            appContainer.style.display = 'none';
+            appContainer.style.display = 'none'; // 숨길 때는 none 유지
             if (unsubscribe) unsubscribe();
         }
     }
@@ -101,11 +103,13 @@ loginBtn.addEventListener('click', () => {
     signInWithPopup(auth, provider).catch((error) => alert("로그인 실패: " + error.message));
 });
 
-// [추가] 비회원 로그인 버튼
 guestBtn.addEventListener('click', () => {
     isGuest = true;
     loginScreen.style.display = 'none';
-    appContainer.style.display = 'flex';
+    
+    // [수정] 여기도 수정
+    appContainer.style.removeProperty('display');
+    
     loadGuestTracks();
 });
 
@@ -113,7 +117,7 @@ logoutBtn.addEventListener('click', () => {
     if (isGuest) {
         if(confirm("비회원 모드를 종료하시겠습니까?")) {
             isGuest = false;
-            location.reload(); // 새로고침해서 초기 화면으로
+            location.reload(); 
         }
     } else {
         if(confirm("로그아웃 하시겠습니까?")) signOut(auth);
@@ -121,7 +125,7 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // ========================
-// 2. 데이터 불러오기 (DB vs Local)
+// 2. 데이터 불러오기
 // ========================
 function subscribeMyTracks(uid) {
     const q = query(collection(db, "users", uid, "tracks"), orderBy("id", "desc"));
@@ -136,14 +140,9 @@ function subscribeMyTracks(uid) {
 }
 
 function loadGuestTracks() {
-    // 로컬 스토리지에서 불러오기
     const localData = JSON.parse(localStorage.getItem('guestTracks')) || [];
-    // 로컬 데이터는 docId가 없으므로 id를 docId로 사용
     const items = localData.map(item => ({ docId: item.id, ...item }));
-    
-    // 최신순 정렬
     items.sort((a, b) => b.id - a.id);
-    
     renderList(items);
     items.forEach(item => checkDeliveryStatus(item));
 }
@@ -220,16 +219,14 @@ function createDOM(item) {
     li.querySelector('.item-title').onclick = () => editMemo(item);
     li.querySelector('.number').onclick = () => copy(item.number);
     li.querySelector('.btn-track').onclick = () => window.open(info.url + item.number, '_blank');
-    li.querySelector('.btn-delete').onclick = () => deleteTrack(item); // item 객체 전체 전달
+    li.querySelector('.btn-delete').onclick = () => deleteTrack(item); 
 
     trackingList.appendChild(li);
 }
 
 // ========================
-// 4. 데이터 조작 (CRUD) - 하이브리드 적용
+// 4. 데이터 조작 (CRUD)
 // ========================
-
-// [추가]
 document.getElementById('trackingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentUser && !isGuest) return alert("로그인 또는 비회원 시작이 필요합니다.");
@@ -254,7 +251,6 @@ document.getElementById('trackingForm').addEventListener('submit', async (e) => 
     };
 
     if (currentUser) {
-        // [회원] DB 저장
         try {
             await addDoc(collection(db, "users", currentUser.uid, "tracks"), newItem);
             finishAdd();
@@ -263,28 +259,24 @@ document.getElementById('trackingForm').addEventListener('submit', async (e) => 
             alert("저장 실패");
         }
     } else {
-        // [비회원] 로컬 저장
         const items = JSON.parse(localStorage.getItem('guestTracks')) || [];
         items.push(newItem);
         localStorage.setItem('guestTracks', JSON.stringify(items));
         finishAdd();
-        loadGuestTracks(); // 화면 갱신
+        loadGuestTracks(); 
     }
     
     addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
 });
 
-// [삭제]
 async function deleteTrack(item) {
     if(!confirm('삭제하시겠습니까?')) return;
     
     if (currentUser) {
-        // [회원] DB 삭제
         try {
             await deleteDoc(doc(db, "users", currentUser.uid, "tracks", item.docId));
         } catch(e) { console.error(e); }
     } else {
-        // [비회원] 로컬 삭제
         let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
         items = items.filter(i => i.id !== item.id);
         localStorage.setItem('guestTracks', JSON.stringify(items));
@@ -292,20 +284,17 @@ async function deleteTrack(item) {
     }
 }
 
-// [수정]
 async function editMemo(item) {
     const newMemo = prompt('수정할 메모를 입력하세요:', item.memo || '');
     if (newMemo === null) return;
     
     if (currentUser) {
-        // [회원] DB 수정
         try {
             await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
                 memo: newMemo
             });
         } catch(e) { console.error(e); }
     } else {
-        // [비회원] 로컬 수정
         let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
         const target = items.find(i => i.id === item.id);
         if(target) {
@@ -316,7 +305,6 @@ async function editMemo(item) {
     }
 }
 
-// [상태 조회 및 업데이트]
 async function checkDeliveryStatus(item) {
     if (Date.now() - (item.lastUpdate || 0) < 300000 || item.statusRank === 2) return;
     if (item.carrier === 'global.aliexpress') return;
@@ -334,10 +322,8 @@ async function checkDeliveryStatus(item) {
             if (stateText.includes('완료') || stateText.includes('도착')) rank = 2;
             else if (stateText.includes('실패')) rank = 3;
 
-            // 상태가 변했으면 업데이트
             if (item.lastState !== stateText || item.lastDetail !== detail) {
                 if (currentUser) {
-                    // [회원] DB 업데이트
                     await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
                         lastState: stateText,
                         lastDetail: detail,
@@ -345,7 +331,6 @@ async function checkDeliveryStatus(item) {
                         lastUpdate: Date.now()
                     });
                 } else {
-                    // [비회원] 로컬 업데이트
                     let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
                     const target = items.find(i => i.id === item.id);
                     if (target) {
@@ -354,10 +339,6 @@ async function checkDeliveryStatus(item) {
                         target.statusRank = rank;
                         target.lastUpdate = Date.now();
                         localStorage.setItem('guestTracks', JSON.stringify(items));
-                        // 로컬은 자동갱신 안되므로 화면 강제 리렌더링은 보류 (깜빡임 방지), 
-                        // 다음 로드 때 반영되거나 수동 새로고침시 반영됨. 
-                        // 즉각 반영 원하면 loadGuestTracks() 호출 가능하나 UX상 놔둠.
-                        // (원활한 UX를 위해 여기서 DOM만 살짝 바꿔줌)
                         const el = document.getElementById(`item-${item.id}`);
                         if(el) {
                            el.querySelector('.status-text').innerText = stateText;
@@ -371,10 +352,6 @@ async function checkDeliveryStatus(item) {
         }
     } catch (e) { console.log("조회 패스"); }
 }
-
-// ========================
-// 5. 유틸리티 & 기타
-// ========================
 
 numInput.addEventListener('input', (e) => {
     let val = e.target.value;
