@@ -2,6 +2,8 @@ const trackingList = document.getElementById('tracking-list');
 const addBtn = document.getElementById('addBtn');
 const toast = document.getElementById('toast');
 const numInput = document.getElementById('trackingNumber');
+const memoInput = document.getElementById('trackingMemo');
+const dateInput = document.getElementById('deliveryDate'); // 날짜 입력
 const predictionArea = document.getElementById('predictionArea');
 const predictionText = document.getElementById('predictionText');
 const carrierSelect = document.getElementById('carrierSelect');
@@ -9,6 +11,19 @@ const tabGlider = document.getElementById('tab-glider');
 
 let currentFilter = 'all'; 
 let currentCarrierId = 'kr.cjlogistics';
+
+// 택배사 키워드 매핑 (스마트 붙여넣기용)
+const carrierKeywords = {
+    'kr.cjlogistics': ['CJ', '대한통운', '씨제이'],
+    'kr.epost': ['우체국', '등기', 'EMS', 'POST'],
+    'kr.hanjin': ['한진'],
+    'kr.lotteglogis': ['롯데', 'LOTTE'],
+    'kr.logen': ['로젠', 'LOGEN'],
+    'kr.cupost': ['CU', '편의점'],
+    'kr.cvsnet': ['GS', '반값', 'POSTBOX'],
+    'kr.kdexp': ['경동'],
+    'kr.daesin': ['대신']
+};
 
 const carrierInfo = {
     'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
@@ -27,29 +42,42 @@ const carrierInfo = {
 
 document.addEventListener('DOMContentLoaded', refreshAll);
 
-// 탭 애니메이션 로직
-function setFilter(event, filterType) {
-    currentFilter = filterType;
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+// [핵심 기능 1] 스마트 붙여넣기 & 자동 감지
+numInput.addEventListener('input', (e) => {
+    // 1. 붙여넣은 텍스트 가져오기
+    let val = e.target.value;
 
-    const buttons = Array.from(document.querySelectorAll('.filter-btn'));
-    const index = buttons.indexOf(event.target);
-    tabGlider.style.transform = `translateX(${index * 100}%)`;
+    // 2. 택배사 자동 감지 (텍스트에 'CJ', '우체국' 등이 있는지 확인)
+    for (const [id, keywords] of Object.entries(carrierKeywords)) {
+        if (keywords.some(k => val.toUpperCase().includes(k))) {
+            currentCarrierId = id;
+            carrierSelect.value = id;
+            predictionText.innerText = `감지됨: ${carrierInfo[id].name}`;
+            predictionArea.classList.add('show');
+            break;
+        }
+    }
 
-    const items = JSON.parse(localStorage.getItem('trackingItems')) || [];
-    renderSortedList(items);
-}
-
-numInput.addEventListener('input', e => {
-    const val = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
-    e.target.value = val;
+    // 3. 숫자만 남기기 (송장번호 추출)
+    const numbers = val.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+    
+    // 사용자가 방금 붙여넣기 한 거라면 입력창 값을 숫자만으로 교체
+    // (직접 타이핑 중일 때는 너무 방해되지 않게 처리)
+    if (val.length > 20 || val.includes('운송장') || val.includes('배송')) {
+        numInput.value = numbers;
+        val = numbers; // 아래 예측 로직을 위해 값 갱신
+    } else {
+        numInput.value = numbers;
+    }
 
     if(carrierSelect.style.display === 'block') return;
 
-    if (val.length >= 9) {
-        predictCarrier(val);
-        predictionArea.classList.add('show');
+    // 4. 길이로 택배사 예측 (기존 로직)
+    if (numbers.length >= 9) {
+        if (!predictionArea.classList.contains('show')) { // 이미 키워드로 감지된 게 없으면
+            predictCarrier(numbers);
+            predictionArea.classList.add('show');
+        }
     } else {
         predictionArea.classList.remove('show');
     }
@@ -64,6 +92,20 @@ function predictCarrier(number) {
     carrierSelect.value = currentCarrierId; 
 }
 
+// 탭 애니메이션
+function setFilter(event, filterType) {
+    currentFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const buttons = Array.from(document.querySelectorAll('.filter-btn'));
+    const index = buttons.indexOf(event.target);
+    tabGlider.style.transform = `translateX(${index * 100}%)`;
+
+    const items = JSON.parse(localStorage.getItem('trackingItems')) || [];
+    renderSortedList(items);
+}
+
 window.showSelectBox = function() {
     predictionArea.classList.remove('show'); 
     carrierSelect.style.display = 'block';   
@@ -74,12 +116,12 @@ carrierSelect.addEventListener('change', (e) => {
     currentCarrierId = e.target.value;
 });
 
+// 조회 및 추가
 async function fetchWithProxy(targetUrl, timeout = 5000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     const timestamp = Date.now();
-    const separator = targetUrl.includes('?') ? '&' : '?';
-    const noCacheUrl = targetUrl + separator + 't=' + timestamp;
+    const noCacheUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + timestamp;
     const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(noCacheUrl);
     
     try {
@@ -95,13 +137,14 @@ async function fetchWithProxy(targetUrl, timeout = 5000) {
 document.getElementById('trackingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const number = numInput.value;
-    const memo = document.getElementById('trackingMemo').value.trim();
+    const memo = memoInput.value.trim();
+    const startDate = dateInput.value; // 날짜 값 가져오기
 
     if (number.length < 9) return alert('번호를 확인해주세요.');
     addBtn.disabled = true; addBtn.innerText = "확인 중...";
 
     if (currentCarrierId === 'global.aliexpress') {
-        saveItem(currentCarrierId, number, memo);
+        saveItem(currentCarrierId, number, memo, startDate);
         finishAdd();
         return;
     }
@@ -124,24 +167,33 @@ document.getElementById('trackingForm').addEventListener('submit', async (e) => 
         }
     }
 
-    saveItem(currentCarrierId, number, memo);
+    saveItem(currentCarrierId, number, memo, startDate);
     finishAdd();
 });
 
 function finishAdd() {
     addBtn.disabled = false; addBtn.innerText = "조회 및 추가";
     numInput.value = '';
-    document.getElementById('trackingMemo').value = '';
+    memoInput.value = '';
+    dateInput.value = ''; // 날짜 초기화
     predictionArea.classList.remove('show');
     carrierSelect.style.display = 'none';
     carrierSelect.classList.remove('show');
 }
 
-function saveItem(carrier, number, memo) {
+function saveItem(carrier, number, memo, startDate) {
     const items = JSON.parse(localStorage.getItem('trackingItems')) || [];
     if (items.some(i => i.number === number)) return alert('이미 등록된 번호입니다.');
     
-    items.push({ id: Date.now(), carrier, number, memo, statusRank: 1, lastUpdate: 0 });
+    items.push({ 
+        id: Date.now(), 
+        carrier, 
+        number, 
+        memo, 
+        startDate, // 날짜 저장
+        statusRank: 1, 
+        lastUpdate: 0 
+    });
     localStorage.setItem('trackingItems', JSON.stringify(items));
     refreshAll(); 
 }
@@ -223,6 +275,18 @@ function updateDOM(el, item, statusClass) {
 function createDOM(item) {
     const info = carrierInfo[item.carrier] || { name: '택배' };
     const displayTitle = (item.memo && item.memo.trim()) ? item.memo : item.number;
+    
+    // [핵심 기능 3] D-Day 계산
+    let dDayTag = '';
+    if (item.startDate) {
+        const start = new Date(item.startDate);
+        const now = new Date();
+        // 시간차이(ms)를 일(day)로 변환
+        const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+        const dayText = diff >= 0 ? `D+${diff}` : `D${diff}`;
+        dDayTag = `<span class="d-day-badge">${dayText}</span>`;
+    }
+
     let statusClass = '';
     if (item.carrier === 'global.aliexpress') statusClass = 'status-global';
     else {
@@ -232,14 +296,18 @@ function createDOM(item) {
     }
     const savedState = item.lastState || '확인 중...';
     const savedDetail = item.lastDetail || '';
+    
     const li = document.createElement('li');
     li.id = `item-${item.id}`;
     if(statusClass) li.className = statusClass;
+    
+    // [핵심 기능 2] 제목 클릭 시 editMemo 호출
     li.innerHTML = `
         <div class="info-area">
             <div class="item-header">
                 <span class="carrier-badge">${info.name}</span>
-                <span class="item-title">${displayTitle}</span>
+                <span class="item-title" onclick="editMemo(${item.id})" title="클릭해서 메모 수정">${displayTitle}</span>
+                ${dDayTag}
             </div>
             <div class="meta-row">
                 <span class="number" onclick="copy('${item.number}')">${item.number}</span>
@@ -256,6 +324,23 @@ function createDOM(item) {
     `;
     trackingList.appendChild(li);
 }
+
+// [핵심 기능 2 구현] 메모 수정 함수
+window.editMemo = function(id) {
+    const items = JSON.parse(localStorage.getItem('trackingItems'));
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    const newMemo = prompt('수정할 메모를 입력하세요:', item.memo || '');
+    if (newMemo === null) return; // 취소 누름
+
+    item.memo = newMemo;
+    localStorage.setItem('trackingItems', JSON.stringify(items));
+    
+    // 전체 새로고침 대신 화면만 갱신해도 되지만, 필터링 등 고려해서 리스트 다시 그리기
+    const currentItems = JSON.parse(localStorage.getItem('trackingItems'));
+    renderSortedList(currentItems);
+};
 
 function deleteItem(id) {
     if(!confirm('삭제하시겠습니까?')) return;
