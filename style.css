@@ -153,8 +153,41 @@ h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 .carrier-pill { display: inline-block; font-size: 0.8rem; color: var(--text-sub); background-color: rgba(0,0,0,0.03); padding: 8px 14px; border-radius: 99px; font-weight: 500; }
 
 .input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; padding: 10px 10px;}
-input, select { width: 100%; padding: 18px; border: none; border-radius: 14px; font-size: 1.05rem; outline: none; background: var(--input-bg); color: var(--text-main); transition: background 0.2s; -webkit-user-select: text; user-select: text; }
-input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; }
+/* input, select { width: 100%; padding: 18px; border: none; border-radius: 14px; font-size: 1.05rem; outline: none; background: var(--input-bg); color: var(--text-main); transition: background 0.2s; -webkit-user-select: text; user-select: text; }
+input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; } */
+input, select { 
+    width: 100%; 
+    height: 56px;        /* 높이 고정! */
+    padding: 0 18px;     /* 상하 패딩 0, 좌우 18px */
+    
+    border: none; 
+    border-radius: 14px; 
+    font-size: 1.05rem; 
+    outline: none; 
+    background: var(--input-bg); 
+    color: var(--text-main); 
+    transition: background 0.2s; 
+    
+    /* 중요 설정 */
+    -webkit-user-select: text; 
+    user-select: text; 
+    box-sizing: border-box;       /* 테두리/패딩 포함 크기 계산 */
+    -webkit-appearance: none;     /* 아이폰 기본 스타일 제거 */
+    appearance: none;
+}
+
+input:focus, select:focus { 
+    background: #FFFFFF; 
+    box-shadow: 0 0 0 2px #0071E3; 
+}
+
+/* [추가됨] 날짜 입력칸이 혼자 튀지 않게 확실히 잡기 */
+input[type="date"] {
+    display: block;
+    height: 56px; 
+    box-sizing: border-box;
+    -webkit-appearance: none;
+}
 
 /* 자동 감지/변경 버튼 영역 */
 .prediction-area { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); padding: 12px 18px; border-radius: 14px; font-size: 0.95rem; color: #0071E3; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); display: none; margin-top: -5px; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -231,6 +264,7 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
 
 
