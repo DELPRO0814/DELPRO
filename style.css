@@ -49,7 +49,6 @@ body.login-page {
     transition: background 0.2s; margin-bottom: 12px;
 }
 .btn-google:hover { background-color: #f5f5f5; }
-/* 구글 로고 크기 고정 */
 .btn-google img { width: 20px !important; height: 20px !important; flex-shrink: 0; }
 
 .btn-guest {
@@ -65,7 +64,6 @@ body.login-page {
    [2] 메인 앱 페이지 전용 스타일
    -------------------------------------- */
 body.app-page {
-    /* 모바일 기본: 스크롤 허용 (강제) */
     display: block !important; 
     height: auto !important; min-height: 100vh;
     overflow-y: auto !important; 
@@ -92,14 +90,18 @@ body.app-page {
     height: auto !important; overflow: visible !important; 
 }
 
-/* PC 화면 (768px 이상) */
+/* =========================================
+   [핵심 수정] PC 화면 좌우 균형 맞추기
+   ========================================= */
 @media (min-width: 768px) {
     body.app-page {
         display: flex !important; align-items: center; justify-content: center;
         height: 100vh !important; overflow: hidden !important; padding: 40px;
     }
     .container {
-        display: flex !important; flex-direction: row; align-items: flex-start;
+        display: flex !important; flex-direction: row; 
+        /* [수정됨] 기존 flex-start 에서 center 로 변경 -> 수직 중앙 정렬 */
+        align-items: center;
         max-width: 1000px; height: 90vh !important;
         overflow: hidden !important; padding: 40px; gap: 50px;
     }
@@ -132,7 +134,6 @@ h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 input, select { width: 100%; padding: 18px; border: none; border-radius: 14px; font-size: 1.05rem; outline: none; background: var(--input-bg); color: var(--text-main); transition: background 0.2s; -webkit-user-select: text; user-select: text; }
 input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; }
 
-/* 자동 감지/변경 버튼 영역 */
 .prediction-area { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); padding: 12px 18px; border-radius: 14px; font-size: 0.95rem; color: #0071E3; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); display: none; margin-top: -5px; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 .prediction-area.show { display: flex; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -140,17 +141,16 @@ input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; 
 #carrierSelect { display: none; }
 #carrierSelect.show { display: block; }
 
-/* 조회 및 추가 버튼 */
 button.btn-add { width: 100%; padding: 18px; border: none; background-color: var(--primary); color: white; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 1.05rem; transition: transform 0.1s, background-color 0.2s; }
 button.btn-add:hover { background-color: #333333; }
 button.btn-add:active { transform: scale(0.98); }
 button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 
-/* [NEW] 하단 통관 조회 섹션 스타일 */
+/* 하단 통관 조회 섹션 스타일 */
 .customs-area {
-    margin-top: 30px; /* 위쪽 여백 */
+    margin-top: 30px;
     padding-top: 25px;
-    border-top: 1px solid rgba(0,0,0,0.05); /* 구분선 */
+    border-top: 1px solid rgba(0,0,0,0.05);
     text-align: center;
 }
 .section-label {
@@ -177,7 +177,6 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
     transition: color 0.2s;
 }
 .customs-btn:hover span { color: var(--text-main); }
-
 
 /* 리스트 필터 및 아이템 */
 .filter-box { margin-bottom: 20px; padding: 3px; background: #7676801f; border-radius: 10px; flex-shrink: 0; }
