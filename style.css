@@ -191,12 +191,14 @@ body.app-page {
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0; /* ⭐ 중요 */
     }
 
     #tracking-list {
         flex: 1;
         overflow-y: auto;
         padding-bottom: 10px;
+        min-height: 0; /* ⭐ 중요 */
     }
 
     #tracking-list::-webkit-scrollbar {
@@ -294,3 +296,4 @@ select:focus {
     box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     border: 1px solid rgba(0,0,0,0.03);
 }
+
