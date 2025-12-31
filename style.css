@@ -94,58 +94,30 @@ body.app-page {
    [핵심 수정] PC 화면 좌우 균형 맞추기
    ========================================= */
 @media (min-width: 768px) {
-
     body.app-page {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        height: 100vh !important;
-        overflow: hidden !important;
-        padding: 40px;
+        display: flex !important; align-items: center; justify-content: center;
+        height: 100vh !important; overflow: hidden !important; padding: 40px;
     }
-
     .container {
-        display: flex !important;
-        flex-direction: row;
+        display: flex !important; flex-direction: row; 
+        /* [수정됨] 기존 flex-start 에서 center 로 변경 -> 수직 중앙 정렬 */
         align-items: center;
-        max-width: 1000px;
-        height: 90vh !important;
-        overflow: hidden !important;
-        padding: 40px;
-        gap: 50px;
+        max-width: 1000px; height: 90vh !important;
+        overflow: hidden !important; padding: 40px; gap: 50px;
     }
-
     .input-section {
-        width: 360px;
-        flex-shrink: 0;
-        height: 100% !important;
-        overflow-y: auto !important;
+        width: 360px; flex-shrink: 0; height: 100% !important;
+        overflow-y: auto !important; display: block;
         padding-right: 10px;
     }
-
-    .input-section::-webkit-scrollbar {
-        width: 0;
-    }
-
+    .input-section::-webkit-scrollbar { width: 0; }
     .list-section {
-        flex-grow: 1;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column;
-        overflow: hidden !important;
+        flex-grow: 1; height: 100% !important; display: flex !important; flex-direction: column; overflow: hidden !important;
     }
-
-    /* ✅ 스크롤 주체를 명확히 지정 */
     #tracking-list {
-        flex: 1;
-        min-height: 0;              /* ⭐ 핵심 */
-        overflow-y: auto !important;
-        padding-bottom: 10px;
+        height: 100% !important; overflow-y: auto !important; padding-bottom: 10px;
     }
-
-    #tracking-list::-webkit-scrollbar {
-        width: 4px;
-    }
+    #tracking-list::-webkit-scrollbar { width: 4px; }
 }
 
 /* --------------------------------------
