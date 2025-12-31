@@ -158,12 +158,12 @@ input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; 
 input, select {
     width: 100%;
     
-    /* 높이 강제 고정 (3중 잠금) */
+    /* 높이 3중 잠금 */
     height: 56px !important;
     min-height: 56px !important;
     max-height: 56px !important;
     
-    /* 패딩: 상하는 0, 좌우는 18px */
+    /* 패딩: 상하 0, 좌우 18px */
     padding: 0 18px !important;
     margin: 0;
     
@@ -187,29 +187,25 @@ input:focus, select:focus {
     box-shadow: 0 0 0 2px #0071E3;
 }
 
-/* [2] 날짜 입력창(Date) 아이폰 전용 버그 해결 코드 */
+/* [2] 날짜 입력창 아이폰 전용 정렬 해결 */
 input[type="date"] {
-    /* 겉박스 높이 확정 */
     display: block;
-    overflow: hidden; /* 넘치는 것 자르기 */
-    
-    /* 텍스트 수직 정렬을 위해 line-height 맞춤 */
-    line-height: 56px;
+    /* 텍스트가 위로 쏠리는 원인인 line-height를 초기화 */
+    line-height: normal; 
 }
 
-/* ★ 여기가 핵심입니다: 아이폰 내부 숨겨진 요소 직접 수정 ★ */
+/* ★ 텍스트 수직 정렬 핵심 코드 ★ */
 input[type="date"]::-webkit-date-and-time-value {
-    /* 내부 요소 높이도 부모와 똑같이 맞춤 */
-    height: 56px;
-    min-height: 56px;
+    /* 내부 박스도 높이를 꽉 채움 */
+    height: 100%; 
     
-    /* 내부 패딩/마진 제거 */
-    padding: 0;
-    margin: 0;
-    
-    /* 텍스트 수직 중앙 정렬 */
+    /* Flexbox로 강제 중앙 정렬 */
     display: flex;
-    align-items: center;
+    align-items: center; 
+    
+    /* 혹시 모를 여백 제거 */
+    margin: 0;
+    padding: 0;
 }
 
 /* 자동 감지/변경 버튼 영역 */
@@ -287,6 +283,7 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
 
 
