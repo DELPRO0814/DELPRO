@@ -102,8 +102,8 @@ body.app-page {
     .container {
         display: flex !important; flex-direction: row; 
         
-        /* [중요] 수직 중앙 정렬 */
-        align-items: center;
+        /* [원상복구] center 대신 flex-start를 써서 둘 다 천장에 딱 붙입니다 */
+        align-items: flex-start !important;
         
         max-width: 1000px; height: 90vh !important;
         overflow: hidden !important; padding: 40px; gap: 50px;
@@ -112,7 +112,7 @@ body.app-page {
     .input-section {
         width: 360px; flex-shrink: 0; 
         
-        /* [핵심 수정] 높이를 100%로 강제하지 않고, 내용물 크기만큼만 잡음 */
+        /* 높이 설정 유지 */
         height: auto !important; 
         max-height: 100% !important; 
         
@@ -122,9 +122,11 @@ body.app-page {
     .input-section::-webkit-scrollbar { width: 0; }
     
     .list-section {
-        /* 오른쪽 리스트는 그대로 꽉 채움 */
         flex-grow: 1; height: 100% !important; 
         display: flex !important; flex-direction: column; overflow: hidden !important;
+        
+        /* [추가] 오른쪽 구역이 내려가지 않도록 상단 여백 제거 */
+        margin-top: 0 !important;
     }
 
     #tracking-list {
@@ -219,4 +221,5 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
