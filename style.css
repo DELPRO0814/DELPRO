@@ -155,49 +155,61 @@ h1 { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
 .input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; padding: 10px 10px;}
 /* input, select { width: 100%; padding: 18px; border: none; border-radius: 14px; font-size: 1.05rem; outline: none; background: var(--input-bg); color: var(--text-main); transition: background 0.2s; -webkit-user-select: text; user-select: text; }
 input:focus, select:focus { background: #FFFFFF; box-shadow: 0 0 0 2px #0071E3; } */
-input, select { 
-    width: 100%; 
+input, select {
+    width: 100%;
     
-    /* [핵심 1] 높이를 min/max로 강제로 찍어 누름 */
+    /* 높이 강제 고정 (3중 잠금) */
     height: 56px !important;
     min-height: 56px !important;
     max-height: 56px !important;
     
-    /* [핵심 2] 상하 패딩을 0으로 죽여서 내부 팽창 방지 */
-    padding: 0 18px;
-    margin: 0; /* 마진 초기화 */
+    /* 패딩: 상하는 0, 좌우는 18px */
+    padding: 0 18px !important;
+    margin: 0;
     
-    border: none; 
-    border-radius: 14px; 
-    font-size: 1.05rem; 
-    outline: none; 
-    background: var(--input-bg); 
-    color: var(--text-main); 
-    transition: background 0.2s; 
+    border: none;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    outline: none;
+    background: var(--input-bg);
+    color: var(--text-main);
+    transition: background 0.2s;
     
-    /* 중요 설정 */
-    box-sizing: border-box; 
-    -webkit-appearance: none; /* 아이폰 기본 스타일 제거 */
+    /* 기본 스타일 제거 */
+    box-sizing: border-box;
+    -webkit-appearance: none;
     appearance: none;
-    
-    /* [핵심 3] 내용이 길어도 줄바꿈 금지 (높이 변화 원천 차단) */
-    white-space: nowrap;
-    overflow: hidden;
 }
 
-input:focus, select:focus { 
-    background: #FFFFFF; 
-    box-shadow: 0 0 0 2px #0071E3; 
+/* 포커스 효과 */
+input:focus, select:focus {
+    background: #FFFFFF;
+    box-shadow: 0 0 0 2px #0071E3;
 }
 
-/* [추가] 날짜 입력칸 전용 정렬 보정 */
+/* [2] 날짜 입력창(Date) 아이폰 전용 버그 해결 코드 */
 input[type="date"] {
-    /* 텍스트 수직 중앙 정렬 */
-    line-height: 56px;
-    /* Flex나 Inline 요소가 아니게 블록으로 박음 */
+    /* 겉박스 높이 확정 */
     display: block;
-    /* 캘린더 아이콘 위치 보정 (필요시) */
-    position: relative;
+    overflow: hidden; /* 넘치는 것 자르기 */
+    
+    /* 텍스트 수직 정렬을 위해 line-height 맞춤 */
+    line-height: 56px;
+}
+
+/* ★ 여기가 핵심입니다: 아이폰 내부 숨겨진 요소 직접 수정 ★ */
+input[type="date"]::-webkit-date-and-time-value {
+    /* 내부 요소 높이도 부모와 똑같이 맞춤 */
+    height: 56px;
+    min-height: 56px;
+    
+    /* 내부 패딩/마진 제거 */
+    padding: 0;
+    margin: 0;
+    
+    /* 텍스트 수직 중앙 정렬 */
+    display: flex;
+    align-items: center;
 }
 
 /* 자동 감지/변경 버튼 영역 */
@@ -275,6 +287,7 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
 
 
