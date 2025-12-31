@@ -94,24 +94,48 @@ body.app-page {
 
 /* PC 화면 (768px 이상) */
 @media (min-width: 768px) {
+
     body.app-page {
-        display: flex !important; align-items: center; justify-content: center;
-        height: 100vh !important; overflow: hidden !important; padding: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        height: 100vh !important;
+        overflow: hidden !important;
+        padding: 40px;
     }
+
     .container {
-        display: flex !important; flex-direction: row; align-items: flex-start;
-        max-width: 1000px; height: 90vh !important;
-        overflow: hidden !important; padding: 40px; gap: 50px;
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+        max-width: 1000px;
+        height: 90vh !important;
+        overflow: hidden !important;
+        padding: 40px;
+        gap: 50px;
     }
+
     .input-section {
-        width: 360px; flex-shrink: 0; height: 100% !important;
-        overflow-y: auto !important; display: block;
+        width: 360px;
+        flex-shrink: 0;
+        height: 100% !important;
+        overflow-y: auto !important;
         padding-right: 10px;
     }
-    .input-section::-webkit-scrollbar { width: 0; }
-    .list-section {
-        flex-grow: 1; height: 100% !important; display: flex !important; flex-direction: column; overflow: hidden !important;
+
+    .input-section::-webkit-scrollbar {
+        width: 0;
     }
+
+    .list-section {
+        flex-grow: 1;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column;
+        overflow: hidden !important;
+    }
+
+    /* ✅ 스크롤 주체를 명확히 지정 */
     #tracking-list {
         flex: 1;
         min-height: 0;              /* ⭐ 핵심 */
@@ -213,4 +237,5 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
