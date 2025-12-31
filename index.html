@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스마트 택배 비서</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
-    <link rel="stylesheet" href="/style.css?v=4.0">
+    <link rel="stylesheet" href="/style.css?v=3.0">
 </head>
-<body class="app-page">
-
-    <div id="app-container" class="container">
+<body class="app-page"> <div id="app-container" class="container">
         
         <div class="input-section">
             <div class="header">
@@ -17,6 +15,15 @@
                 <div class="header-right">
                     <button id="logoutBtn" class="btn-logout">로그아웃</button>
                 </div>
+            </div>
+
+            <div class="link-group">
+                <a href="https://7customs.com/" target="_blank" title="통관알리미">
+                    <img src="img/tong.png" alt="통관" class="link-icon">
+                </a>
+                <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" title="유니패스">
+                    <img src="img/uni.png" alt="유니패스" class="link-icon">
+                </a>
             </div>
 
             <div class="carrier-info">
@@ -63,20 +70,6 @@
                 </div>
                 <button type="submit" id="addBtn" class="btn-add">조회 및 추가</button>
             </form>
-
-            <div class="customs-area">
-                <p class="section-label">✈️ 해외 직구 통관 조회</p>
-                <div class="link-group">
-                    <a href="https://7customs.com/" target="_blank" class="customs-btn">
-                        <img src="img/tong.png" alt="통관알리미">
-                        <span>통관알리미</span>
-                    </a>
-                    <a href="https://unipass.customs.go.kr/csp/index.do" target="_blank" class="customs-btn">
-                        <img src="img/uni.png" alt="유니패스">
-                        <span>유니패스</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
         <div class="list-section">
@@ -95,6 +88,6 @@
     </div>
     <div id="toast" class="toast">복사되었습니다</div>
 
-    <script src="/script.js?v=4.0" type="module"></script>
+    <script src="/script.js?v=3.0" type="module"></script>
 </body>
 </html>
