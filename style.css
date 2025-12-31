@@ -98,24 +98,47 @@ body.app-page {
         display: flex !important; align-items: center; justify-content: center;
         height: 100vh !important; overflow: hidden !important; padding: 40px;
     }
+
     .container {
-        display: flex !important; flex-direction: row; align-items: flex-start;
+        display: flex !important; flex-direction: row; 
+        
+        /* [유지] 상단 라인 맞추기 */
+        align-items: flex-start !important;
+        
         max-width: 1000px; height: 90vh !important;
         overflow: hidden !important; padding: 40px; gap: 50px;
     }
+    
     .input-section {
-        width: 360px; flex-shrink: 0; height: 100% !important;
+        width: 360px; flex-shrink: 0; 
+        height: auto !important; max-height: 100% !important; 
         overflow-y: auto !important; display: block;
         padding-right: 10px;
     }
     .input-section::-webkit-scrollbar { width: 0; }
+    
     .list-section {
-        flex-grow: 1; height: 100% !important; display: flex !important; flex-direction: column; overflow: hidden !important;
+        flex-grow: 1; height: 100% !important; 
+        display: flex !important; flex-direction: column; overflow: hidden !important;
+        margin-top: 0 !important;
     }
+
     #tracking-list {
-        height: 100% !important; overflow-y: auto !important; padding-bottom: 10px;
+        /* [핵심 수정] height: 100%를 지우고 flex: 1을 줍니다 */
+        /* 이렇게 해야 [필터버튼]을 뺀 나머지 공간만 차지해서 스크롤이 생깁니다 */
+        flex: 1; 
+        height: auto !important;
+        min-height: 0; /* 파이어폭스 등 호환성용 */
+        
+        overflow-y: auto !important; 
+        padding-bottom: 10px;
     }
-    #tracking-list::-webkit-scrollbar { width: 4px; }
+    
+    /* 스크롤바 디자인 */
+    #tracking-list::-webkit-scrollbar { width: 6px; }
+    #tracking-list::-webkit-scrollbar-track { background: transparent; }
+    #tracking-list::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+    #tracking-list::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.4); }
 }
 
 /* --------------------------------------
@@ -207,3 +230,4 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
