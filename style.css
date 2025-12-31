@@ -175,6 +175,9 @@ input, select {
     color: var(--text-main);
     transition: background 0.2s;
     
+    /* 중요: 줄 간격(line-height)을 높이(56px)와 똑같이 맞춤 -> 수직 중앙 정렬의 정석 */
+    line-height: 56px !important;
+    
     /* 기본 스타일 제거 */
     box-sizing: border-box;
     -webkit-appearance: none;
@@ -187,25 +190,29 @@ input:focus, select:focus {
     box-shadow: 0 0 0 2px #0071E3;
 }
 
-/* [2] 날짜 입력창 아이폰 전용 정렬 해결 */
+/* [2] 날짜 입력창(Date) 아이폰 전용 해결책 */
 input[type="date"] {
     display: block;
-    /* 텍스트가 위로 쏠리는 원인인 line-height를 초기화 */
-    line-height: normal; 
+    /* 여기서도 줄 간격을 강제합니다 */
+    line-height: 56px !important;
+    overflow: hidden;
 }
 
-/* ★ 텍스트 수직 정렬 핵심 코드 ★ */
+/* ★ 여기가 핵심 변경점입니다 ★ */
+/* flex를 버리고, block + line-height 조합으로 변경 */
 input[type="date"]::-webkit-date-and-time-value {
-    /* 내부 박스도 높이를 꽉 채움 */
-    height: 100%; 
+    display: block; /* flex 아님 */
     
-    /* Flexbox로 강제 중앙 정렬 */
-    display: flex;
-    align-items: center; 
+    /* 내부 요소 높이와 줄 간격을 부모와 일치시킴 */
+    height: 56px;
+    line-height: 56px;
     
-    /* 혹시 모를 여백 제거 */
-    margin: 0;
+    /* 내부 패딩/마진 완전 제거 */
     padding: 0;
+    margin: 0;
+    
+    /* 텍스트 왼쪽 정렬 (다른 칸과 통일) */
+    text-align: left;
 }
 
 /* 자동 감지/변경 버튼 영역 */
@@ -283,6 +290,7 @@ button.btn-add:disabled { background-color: #D1D1D6; cursor: not-allowed; }
 .btn-delete { background-color: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 .empty-msg { display: flex; align-items: center; justify-content: center; color: #86868B; font-size: 1rem; min-height: 100px; }
 .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; display: none; z-index: 2000; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
 
 
 
