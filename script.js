@@ -110,16 +110,32 @@ if (logoutBtn) {
 // [기능 함수들]
 // ------------------------------------------------------------
 const carrierKeywords = { 'kr.cjlogistics': ['CJ', '대한통운'], 'kr.epost': ['우체국', '등기'], 'kr.hanjin': ['한진'], 'kr.lotteglogis': ['롯데'], 'kr.logen': ['로젠'], 'kr.cupost': ['CU', '편의점'], 'kr.cvsnet': ['GS', '반값'], 'kr.kdexp': ['경동'], 'kr.daesin': ['대신'] };
+// const carrierInfo = {
+//     'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
+//     'kr.epost': { name: '우체국', url: 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' },
+//     // 'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblNum=' },
+//     'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnum=' },
+//     'kr.lotteglogis': { name: '롯데', url: 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=' },
+//     'kr.logen': { name: '로젠', url: 'https://www.ilogen.com/m/personal/trace/' },
+//     'global.aliexpress': { name: '알리(직구)', url: 'https://t.17track.net/ko#nums=' },
+//     'kr.cupost': { name: 'CU 편의점', url: 'https://www.cupost.co.kr/postbox/delivery/localResult.cupost?invoice_no=' },
+//     'kr.cvsnet': { name: 'GS Postbox', url: 'http://www.cvsnet.co.kr/invoice/tracking.jsp?invoice_no=' },
+//     'kr.kdexp': { name: '경동택배', url: 'https://kdexp.com/service/delivery/delivery_view.do?item=' },
+//     'kr.daesin': { name: '대신택배', url: 'https://www.ds3211.co.kr/freight/internalFreightSearch.do?billno=' }
+// };
+
 const carrierInfo = {
     'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
     'kr.epost': { name: '우체국', url: 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' },
-    // 'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblNum=' },
-    'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnum=' },
+    // 한진택배: 사용자가 확인한 성공 URL 구조 적용 (wblnum 소문자 및 파라미터 순서 조정)
+    'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText=&wblnum=' },
     'kr.lotteglogis': { name: '롯데', url: 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=' },
+    // 로젠택배: 모바일 페이지에서 번호를 바로 붙여서 호출 가능하도록 최신화
     'kr.logen': { name: '로젠', url: 'https://www.ilogen.com/m/personal/trace/' },
     'global.aliexpress': { name: '알리(직구)', url: 'https://t.17track.net/ko#nums=' },
     'kr.cupost': { name: 'CU 편의점', url: 'https://www.cupost.co.kr/postbox/delivery/localResult.cupost?invoice_no=' },
-    'kr.cvsnet': { name: 'GS Postbox', url: 'http://www.cvsnet.co.kr/invoice/tracking.jsp?invoice_no=' },
+    // GS Postbox: HTTP -> HTTPS 보안 연결 및 최신 조회 경로로 변경
+    'kr.cvsnet': { name: 'GS Postbox', url: 'https://www.cvsnet.co.kr/reservation-inquiry/delivery/index.do?inv_no=' },
     'kr.kdexp': { name: '경동택배', url: 'https://kdexp.com/service/delivery/delivery_view.do?item=' },
     'kr.daesin': { name: '대신택배', url: 'https://www.ds3211.co.kr/freight/internalFreightSearch.do?billno=' }
 };
@@ -366,4 +382,5 @@ function copy(text) {
     const t = document.getElementById('toast');
     t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000);
 }
+
 
