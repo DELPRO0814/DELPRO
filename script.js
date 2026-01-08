@@ -113,7 +113,8 @@ const carrierKeywords = { 'kr.cjlogistics': ['CJ', '대한통운'], 'kr.epost': 
 const carrierInfo = {
     'kr.cjlogistics': { name: 'CJ대한통운', url: 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' },
     'kr.epost': { name: '우체국', url: 'https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=' },
-    'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblNum=' },
+    // 'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblNum=' },
+    'kr.hanjin': { name: '한진', url: 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnum=' },
     'kr.lotteglogis': { name: '롯데', url: 'https://www.lotteglogis.com/home/reservation/tracking/linkView?InvNo=' },
     'kr.logen': { name: '로젠', url: 'https://www.ilogen.com/m/personal/trace/' },
     'global.aliexpress': { name: '알리(직구)', url: 'https://t.17track.net/ko#nums=' },
@@ -365,3 +366,4 @@ function copy(text) {
     const t = document.getElementById('toast');
     t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000);
 }
+
