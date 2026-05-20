@@ -262,11 +262,9 @@ function handleSmartInput(e) {
             setSinglePrediction('kr.epost', `예상: 우체국택배`);
         } 
         else if (numbers.length >= 10 && numbers.length <= 12) {
-            // 🔥 10~12자리: 겹치는 택배사 버튼 동시 표출
             const btnStyle = "padding:4px 8px; margin-left:4px; border:1px solid #ccc; background:#fff; border-radius:12px; font-size:0.85em; cursor:pointer; color:#555; transition:0.2s;";
             const activeStyle = "padding:4px 8px; margin-left:4px; border:1px solid #007AFF; background:#e6f2ff; border-radius:12px; font-size:0.85em; cursor:pointer; color:#007AFF; font-weight:bold; transition:0.2s;";
             
-            // 타이핑할 때마다 버튼이 리셋되지 않도록 방어하는 로직
             if (!pText.innerHTML.includes('<button')) {
                 pText.innerHTML = `
                     <span style="font-size:0.85em; color:#666;">추천:</span>
@@ -278,7 +276,6 @@ function handleSmartInput(e) {
                 if (changeBtn) changeBtn.style.display = 'none'; 
                 pArea.classList.add('show');
                 
-                // 기본 선택은 CJ로 둡니다. (사용자가 버튼 안 누르고 추가해도 되도록)
                 currentCarrierId = 'kr.cjlogistics'; 
                 cSelect.value = 'kr.cjlogistics';
             }
@@ -289,7 +286,7 @@ function handleSmartInput(e) {
     } 
     else if (!keywordDetected && numbers.length < 9) {
         pArea.classList.remove('show');
-        pText.innerHTML = ''; // 지웠을 때 텍스트 완전 초기화
+        pText.innerHTML = ''; 
     }
 
     function setSinglePrediction(id, textMsg) {
@@ -301,12 +298,10 @@ function handleSmartInput(e) {
     }
 }
 
-// 🔥 다중 버튼 클릭 시 작동하는 시각적 피드백 함수
 window.quickSelect = function(btnElement, id) {
     currentCarrierId = id;
     document.getElementById('carrierSelect').value = id;
     
-    // 1. 모든 버튼 색상 끄기 (초기화)
     const buttons = btnElement.parentElement.querySelectorAll('.quick-btn');
     buttons.forEach(b => {
         b.style.border = "1px solid #ccc";
@@ -315,7 +310,6 @@ window.quickSelect = function(btnElement, id) {
         b.style.fontWeight = "normal";
     });
     
-    // 2. 누른 버튼만 파란색으로 켜기
     btnElement.style.border = "1px solid #007AFF";
     btnElement.style.background = "#e6f2ff";
     btnElement.style.color = "#007AFF";
@@ -373,8 +367,6 @@ async function checkDeliveryStatus(item) {
     if (item.carrier === 'global.aliexpress') return;
 
     const targetUrl = `https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`;
-    
-    // 🚨 내 전용 프록시 URL
     const myProxyUrl = "https://shiptrack-proxy.wogus3317.workers.dev";
     
     try {
@@ -417,23 +409,26 @@ function setFilter(event, filterType) {
     else loadGuestTracks();
 }
 
+// 🔥 수정된 초기화 함수 (입력 후 완벽하게 리셋되도록 변경)
 function finishAdd() {
     document.getElementById('trackingNumber').value = '';
     document.getElementById('trackingMemo').value = '';
     document.getElementById('deliveryDate').value = ''; 
     document.getElementById('predictionArea').classList.remove('show');
     
-    // 🔥 이 줄이 추가되었습니다! (기존 버튼 찌꺼기 완벽 삭제)
+    // 버튼 찌꺼기를 완전히 지워서 다음번 입력 시 정상적으로 뜨게 함
     document.getElementById('predictionText').innerHTML = ''; 
     
     const s = document.getElementById('carrierSelect');
     s.style.display = 'none'; s.classList.remove('show');
 }
+
 window.showSelectBox = function() {
     document.getElementById('predictionArea').classList.remove('show'); 
     const s = document.getElementById('carrierSelect');
     s.style.display = 'block'; s.classList.add('show');
 }
+
 function copy(text) {
     navigator.clipboard.writeText(text);
     const t = document.getElementById('toast');
