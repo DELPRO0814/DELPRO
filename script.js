@@ -32,7 +32,6 @@ let unsubscribe = null;
 // [인증 상태 감지 및 라우팅]
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // [회원] 로그인 상태
         currentUser = user;
         if (loginBtn) {
             window.location.replace('/');
@@ -40,9 +39,7 @@ onAuthStateChanged(auth, (user) => {
             subscribeMyTracks(user.uid);
         }
     } else {
-        // [비로그인]
         const isGuest = localStorage.getItem('guestMode') === 'true';
-
         if (isGuest) {
             if (loginBtn) {
                 window.location.replace('/');
@@ -87,7 +84,6 @@ if (logoutBtn) {
         }
     });
 
-    // 앱 페이지 기능들
     const trackingForm = document.getElementById('trackingForm');
     if (trackingForm) {
         trackingForm.addEventListener('submit', handleAddSubmit);
@@ -236,33 +232,54 @@ async function handleAddSubmit(e) {
     btn.disabled = false; btn.innerText = "조회 및 추가";
 }
 
+// 스마트 매칭 로직 개선 버전
 function handleSmartInput(e) {
     const val = e.target.value;
     const pArea = document.getElementById('predictionArea');
     const pText = document.getElementById('predictionText');
     const cSelect = document.getElementById('carrierSelect');
     
+    // 1. 텍스트 키워드 매칭 우선 검사
+    let keywordDetected = false;
     for (const [id, keywords] of Object.entries(carrierKeywords)) {
         if (keywords.some(k => val.toUpperCase().includes(k))) {
             currentCarrierId = id;
             cSelect.value = id;
             pText.innerText = `감지됨: ${carrierInfo[id].name}`;
             pArea.classList.add('show');
+            keywordDetected = true;
             break;
         }
     }
+
+    // 특수문자 제거 후 숫자/영문 추출
     const numbers = val.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
-    e.target.value = numbers;
+    e.target.value = numbers; // 정제된 문자열 피드백
     
-    if(cSelect.style.display === 'block') return;
-    if (numbers.length >= 9 && !pArea.classList.contains('show')) {
-        if (/^[A-Z]/.test(numbers)) currentCarrierId = 'global.aliexpress';
-        else if (numbers.length === 13) currentCarrierId = 'kr.epost';
-        else currentCarrierId = 'kr.cjlogistics';
+    // 수동 선택창이 켜진 상태라면 자동 추론을 건너뜁니다.
+    if (cSelect.style.display === 'block') return;
+    
+    // 2. 키워드 매칭이 안 되었을 때, 자릿수/패턴 기반 정밀 추론
+    if (!keywordDetected && numbers.length >= 9) {
+        if (/^[A-Z]/.test(numbers)) {
+            currentCarrierId = 'global.aliexpress';
+        } else if (numbers.length === 13) {
+            currentCarrierId = 'kr.epost'; // 우체국 (13자리)
+        } else if (numbers.length === 11) {
+            // 11자리는 주로 한진, 롯데, 로젠 등 (기본값을 한진으로 설정하거나 원하시는 값으로 변경 가능)
+            currentCarrierId = 'kr.hanjin'; 
+        } else if (numbers.length === 10 || numbers.length === 12) {
+            // 10자리나 12자리는 CJ대한통운 확률이 매우 높음
+            currentCarrierId = 'kr.cjlogistics';
+        } else {
+            // 그 외 기본값
+            currentCarrierId = 'kr.cjlogistics';
+        }
+
         pText.innerText = `예상: ${carrierInfo[currentCarrierId].name}`;
         cSelect.value = currentCarrierId; 
         pArea.classList.add('show');
-    } else if (numbers.length < 9) {
+    } else if (!keywordDetected && numbers.length < 9) {
         pArea.classList.remove('show');
     }
 }
@@ -318,8 +335,6 @@ async function checkDeliveryStatus(item) {
     if (item.carrier === 'global.aliexpress') return;
 
     const targetUrl = `https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`;
-    
-    // 사용자가 생성한 클라우드플레어 워커 프록시 주소 적용
     const myProxyUrl = "https://shiptrack-proxy.wogus3317.workers.dev";
     
     try {
