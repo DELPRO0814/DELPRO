@@ -270,4 +270,168 @@ function handleSmartInput(e) {
             if (!pText.innerHTML.includes('<button')) {
                 pText.innerHTML = `
                     <span style="font-size:0.85em; color:#666;">추천:</span>
-                    <button type="button" class="quick-btn" style="${activeStyle}" onclick="window.quickSelect(this, 'kr.
+                    <button type="button" class="quick-btn" style="${activeStyle}" onclick="window.quickSelect(this, 'kr.cjlogistics')">CJ</button>
+                    <button type="button" class="quick-btn" style="${btnStyle}" onclick="window.quickSelect(this, 'kr.hanjin')">한진</button>
+                    <button type="button" class="quick-btn" style="${btnStyle}" onclick="window.quickSelect(this, 'kr.lotteglogis')">롯데</button>
+                    <button type="button" class="quick-btn" style="${btnStyle}" onclick="window.quickSelect(this, 'kr.logen')">로젠</button>
+                `;
+                if (changeBtn) changeBtn.style.display = 'none'; 
+                pArea.classList.add('show');
+                
+                // 기본 선택은 CJ로 둡니다. (사용자가 버튼 안 누르고 추가해도 되도록)
+                currentCarrierId = 'kr.cjlogistics'; 
+                cSelect.value = 'kr.cjlogistics';
+            }
+        } 
+        else {
+            setSinglePrediction('kr.cjlogistics', `예상: CJ대한통운`);
+        }
+    } 
+    else if (!keywordDetected && numbers.length < 9) {
+        pArea.classList.remove('show');
+        pText.innerHTML = ''; // 지웠을 때 텍스트 완전 초기화
+    }
+
+    function setSinglePrediction(id, textMsg) {
+        currentCarrierId = id;
+        cSelect.value = id;
+        pText.innerHTML = textMsg;
+        if (changeBtn) changeBtn.style.display = 'inline-block';
+        pArea.classList.add('show');
+    }
+}
+
+// 🔥 다중 버튼 클릭 시 작동하는 시각적 피드백 함수
+window.quickSelect = function(btnElement, id) {
+    currentCarrierId = id;
+    document.getElementById('carrierSelect').value = id;
+    
+    // 1. 모든 버튼 색상 끄기 (초기화)
+    const buttons = btnElement.parentElement.querySelectorAll('.quick-btn');
+    buttons.forEach(b => {
+        b.style.border = "1px solid #ccc";
+        b.style.background = "#fff";
+        b.style.color = "#555";
+        b.style.fontWeight = "normal";
+    });
+    
+    // 2. 누른 버튼만 파란색으로 켜기
+    btnElement.style.border = "1px solid #007AFF";
+    btnElement.style.background = "#e6f2ff";
+    btnElement.style.color = "#007AFF";
+    btnElement.style.fontWeight = "bold";
+}
+
+async function deleteTrack(item) {
+    if(!confirm('삭제하시겠습니까?')) return;
+    if (currentUser) {
+        try { await deleteDoc(doc(db, "users", currentUser.uid, "tracks", item.docId)); } catch(e) {}
+    } else {
+        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        items = items.filter(i => i.id !== item.id);
+        localStorage.setItem('guestTracks', JSON.stringify(items));
+        loadGuestTracks();
+    }
+}
+
+async function editMemo(item) {
+    const newMemo = prompt('수정할 메모:', item.memo || '');
+    if (newMemo === null) return;
+    if (currentUser) {
+        await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), { memo: newMemo });
+    } else {
+        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        const t = items.find(i => i.id === item.id);
+        if(t) { t.memo = newMemo; localStorage.setItem('guestTracks', JSON.stringify(items)); loadGuestTracks(); }
+    }
+}
+
+async function updateTrackStatus(item, stateText, detail, rank) {
+    if (item.lastState === stateText && item.lastDetail === detail) return;
+
+    if (currentUser) {
+        await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
+            lastState: stateText, lastDetail: detail, statusRank: rank, lastUpdate: Date.now()
+        });
+    } else {
+        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
+        const t = items.find(i => i.id === item.id);
+        if(t) {
+            t.lastState = stateText; t.lastDetail = detail; t.statusRank = rank; t.lastUpdate = Date.now();
+            localStorage.setItem('guestTracks', JSON.stringify(items));
+            const el = document.getElementById(`item-${item.docId}`);
+            if(el) {
+                el.querySelector('.status-text').innerText = stateText;
+                el.querySelector('.detail-text').innerText = detail;
+            }
+        }
+    }
+}
+
+async function checkDeliveryStatus(item) {
+    if (Date.now() - (item.lastUpdate || 0) < 300000 || item.statusRank === 2) return;
+    if (item.carrier === 'global.aliexpress') return;
+
+    const targetUrl = `https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`;
+    
+    // 🚨 내 전용 프록시 URL
+    const myProxyUrl = "https://shiptrack-proxy.wogus3317.workers.dev";
+    
+    try {
+        const res = await fetch(`${myProxyUrl}/?url=${encodeURIComponent(targetUrl)}`);
+
+        if (res.ok) {
+            const data = await res.json();
+            const stateText = data.state ? data.state.text : '상태 미등록';
+            const location = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].location.name : '';
+            const time = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].time.substring(5, 16).replace('T', ' ') : '';
+            const detail = location ? `${time} | ${location}` : (time || '');
+            
+            let rank = 1;
+            if (stateText.includes('완료') || stateText.includes('도착')) rank = 2;
+            else if (stateText.includes('실패')) rank = 3;
+
+            await updateTrackStatus(item, stateText, detail, rank);
+            
+        } else if (res.status === 404) {
+            console.log(`[${item.number}] 택배사 전산 미등록`);
+        } else {
+            console.error(`[${item.number}] API 서버 에러: ${res.status}`);
+            await updateTrackStatus(item, 'API 조회 실패', '일시적인 서버 오류', 3);
+        }
+    } catch (e) {
+        console.error(`[${item.number}] 조회 중 네트워크 예외 발생:`, e);
+        await updateTrackStatus(item, '네트워크 오류', '프록시 연결 실패', 3);
+    }
+}
+
+function setFilter(event, filterType) {
+    currentFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    const index = Array.from(document.querySelectorAll('.filter-btn')).indexOf(event.target);
+    const glider = document.getElementById('tab-glider');
+    if(glider) glider.style.transform = `translateX(${index * 100}%)`;
+    
+    if(currentUser) subscribeMyTracks(currentUser.uid);
+    else loadGuestTracks();
+}
+
+function finishAdd() {
+    document.getElementById('trackingNumber').value = '';
+    document.getElementById('trackingMemo').value = '';
+    document.getElementById('deliveryDate').value = ''; 
+    document.getElementById('predictionArea').classList.remove('show');
+    const s = document.getElementById('carrierSelect');
+    s.style.display = 'none'; s.classList.remove('show');
+}
+window.showSelectBox = function() {
+    document.getElementById('predictionArea').classList.remove('show'); 
+    const s = document.getElementById('carrierSelect');
+    s.style.display = 'block'; s.classList.add('show');
+}
+function copy(text) {
+    navigator.clipboard.writeText(text);
+    const t = document.getElementById('toast');
+    t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000);
+}
