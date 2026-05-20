@@ -54,7 +54,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// [로그인 페이지 로직]
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         localStorage.removeItem('guestMode');
@@ -67,7 +66,6 @@ if (loginBtn) {
     });
 }
 
-// [앱 페이지 로직]
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         if (localStorage.getItem('guestMode') === 'true') {
@@ -232,56 +230,94 @@ async function handleAddSubmit(e) {
     btn.disabled = false; btn.innerText = "조회 및 추가";
 }
 
-// 스마트 매칭 로직 개선 버전
+// ------------------------------------------------------------
+// 💡 다중 선택 UI가 적용된 스마트 입력 감지 로직
+// ------------------------------------------------------------
 function handleSmartInput(e) {
     const val = e.target.value;
     const pArea = document.getElementById('predictionArea');
     const pText = document.getElementById('predictionText');
     const cSelect = document.getElementById('carrierSelect');
+    const changeBtn = pArea.querySelector('.btn-change'); // 기존 HTML의 변경 버튼
     
-    // 1. 텍스트 키워드 매칭 우선 검사
+    // 1. 텍스트 키워드 매칭 검사
     let keywordDetected = false;
     for (const [id, keywords] of Object.entries(carrierKeywords)) {
         if (keywords.some(k => val.toUpperCase().includes(k))) {
-            currentCarrierId = id;
-            cSelect.value = id;
-            pText.innerText = `감지됨: ${carrierInfo[id].name}`;
-            pArea.classList.add('show');
+            setSinglePrediction(id, `감지됨: ${carrierInfo[id].name}`);
             keywordDetected = true;
             break;
         }
     }
 
-    // 특수문자 제거 후 숫자/영문 추출
+    // 특수문자 제거
     const numbers = val.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
-    e.target.value = numbers; // 정제된 문자열 피드백
+    e.target.value = numbers; 
     
-    // 수동 선택창이 켜진 상태라면 자동 추론을 건너뜁니다.
-    if (cSelect.style.display === 'block') return;
+    if(cSelect.style.display === 'block') return; // 수동 선택창이 열려있으면 무시
     
-    // 2. 키워드 매칭이 안 되었을 때, 자릿수/패턴 기반 정밀 추론
+    // 2. 키워드가 없고 숫자 길이가 충분할 때
     if (!keywordDetected && numbers.length >= 9) {
-        if (/^[A-Z]/.test(numbers)) {
-            currentCarrierId = 'global.aliexpress';
-        } else if (numbers.length === 13) {
-            currentCarrierId = 'kr.epost'; // 우체국 (13자리)
-        } else if (numbers.length === 11) {
-            // 11자리는 주로 한진, 롯데, 로젠 등 (기본값을 한진으로 설정하거나 원하시는 값으로 변경 가능)
-            currentCarrierId = 'kr.hanjin'; 
-        } else if (numbers.length === 10 || numbers.length === 12) {
-            // 10자리나 12자리는 CJ대한통운 확률이 매우 높음
-            currentCarrierId = 'kr.cjlogistics';
-        } else {
-            // 그 외 기본값
-            currentCarrierId = 'kr.cjlogistics';
-        }
+        
+        // 기본 '변경' 버튼 복구 (다중 선택 상태에서 돌아올 때를 대비)
+        if (changeBtn) changeBtn.style.display = 'inline-block';
 
-        pText.innerText = `예상: ${carrierInfo[currentCarrierId].name}`;
-        cSelect.value = currentCarrierId; 
-        pArea.classList.add('show');
-    } else if (!keywordDetected && numbers.length < 9) {
+        if (/^[A-Z]/.test(numbers)) {
+            setSinglePrediction('global.aliexpress', `예상: ${carrierInfo['global.aliexpress'].name}`);
+        } 
+        else if (numbers.length === 13) {
+            setSinglePrediction('kr.epost', `예상: 우체국택배`);
+        } 
+        else if (numbers.length === 11) {
+            // 🔥 11자리: 한진, 롯데, 로젠 등 겹치는 택배사 다중 선택 UI 표출
+            const btnStyle = "padding:3px 10px; margin-left:6px; border:1px solid #ccc; background:#fff; border-radius:15px; font-size:0.85em; cursor:pointer; color:#333; transition:0.2s;";
+            
+            pText.innerHTML = `
+                <span style="font-size:0.9em; color:#666;">택배사 선택: </span>
+                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.hanjin')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">한진</button>
+                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.lotteglogis')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">롯데</button>
+                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.logen')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">로젠</button>
+            `;
+            if (changeBtn) changeBtn.style.display = 'none'; // 기본 변경 버튼 임시 숨김
+            pArea.classList.add('show');
+            
+            // 기본값 설정 (선택 안 하고 바로 추가할 경우를 대비)
+            currentCarrierId = 'kr.hanjin'; 
+            cSelect.value = 'kr.hanjin';
+        } 
+        else if (numbers.length === 10 || numbers.length === 12) {
+            setSinglePrediction('kr.cjlogistics', `예상: CJ대한통운`);
+        } 
+        else {
+            setSinglePrediction('kr.cjlogistics', `예상: CJ대한통운`);
+        }
+    } 
+    else if (!keywordDetected && numbers.length < 9) {
         pArea.classList.remove('show');
     }
+
+    // 단일 선택일 때 화면에 세팅하는 내부 함수
+    function setSinglePrediction(id, textMsg) {
+        currentCarrierId = id;
+        cSelect.value = id;
+        pText.innerHTML = textMsg;
+        if (changeBtn) changeBtn.style.display = 'inline-block';
+        pArea.classList.add('show');
+    }
+}
+
+// 🔥 다중 선택 버튼을 눌렀을 때 실행될 글로벌 함수
+window.quickSelect = function(id) {
+    currentCarrierId = id;
+    document.getElementById('carrierSelect').value = id;
+    
+    // 선택된 택배사 이름으로 텍스트 변경
+    const pText = document.getElementById('predictionText');
+    pText.innerHTML = `<span style="color:#007AFF; font-weight:bold;">✔ 선택됨:</span> ${carrierInfo[id].name}`;
+    
+    // 숨겨뒀던 기존의 '변경' 버튼 다시 표시
+    const changeBtn = document.getElementById('predictionArea').querySelector('.btn-change');
+    if(changeBtn) changeBtn.style.display = 'inline-block';
 }
 
 async function deleteTrack(item) {
