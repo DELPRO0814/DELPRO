@@ -19,7 +19,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// 현재 페이지 요소 확인
 const loginBtn = document.getElementById('googleLoginBtn');
 const guestBtn = document.getElementById('guestLoginBtn'); 
 const logoutBtn = document.getElementById('logoutBtn');
@@ -29,7 +28,6 @@ let currentFilter = 'all';
 let currentCarrierId = 'kr.cjlogistics';
 let unsubscribe = null;
 
-// [인증 상태 감지 및 라우팅]
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -231,16 +229,15 @@ async function handleAddSubmit(e) {
 }
 
 // ------------------------------------------------------------
-// 💡 다중 선택 UI가 적용된 스마트 입력 감지 로직
+// 💡 완벽하게 개선된 스마트 선택 로직
 // ------------------------------------------------------------
 function handleSmartInput(e) {
     const val = e.target.value;
     const pArea = document.getElementById('predictionArea');
     const pText = document.getElementById('predictionText');
     const cSelect = document.getElementById('carrierSelect');
-    const changeBtn = pArea.querySelector('.btn-change'); // 기존 HTML의 변경 버튼
+    const changeBtn = pArea.querySelector('.btn-change'); 
     
-    // 1. 텍스트 키워드 매칭 검사
     let keywordDetected = false;
     for (const [id, keywords] of Object.entries(carrierKeywords)) {
         if (keywords.some(k => val.toUpperCase().includes(k))) {
@@ -250,184 +247,27 @@ function handleSmartInput(e) {
         }
     }
 
-    // 특수문자 제거
     const numbers = val.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
     e.target.value = numbers; 
     
-    if(cSelect.style.display === 'block') return; // 수동 선택창이 열려있으면 무시
+    if(cSelect.style.display === 'block') return; 
     
-    // 2. 키워드가 없고 숫자 길이가 충분할 때
     if (!keywordDetected && numbers.length >= 9) {
-        
-        // 기본 '변경' 버튼 복구 (다중 선택 상태에서 돌아올 때를 대비)
         if (changeBtn) changeBtn.style.display = 'inline-block';
 
         if (/^[A-Z]/.test(numbers)) {
-            setSinglePrediction('global.aliexpress', `예상: ${carrierInfo['global.aliexpress'].name}`);
+            setSinglePrediction('global.aliexpress', `예상: 알리익스프레스 (직구)`);
         } 
         else if (numbers.length === 13) {
             setSinglePrediction('kr.epost', `예상: 우체국택배`);
         } 
-        else if (numbers.length === 11) {
-            // 🔥 11자리: 한진, 롯데, 로젠 등 겹치는 택배사 다중 선택 UI 표출
-            const btnStyle = "padding:3px 10px; margin-left:6px; border:1px solid #ccc; background:#fff; border-radius:15px; font-size:0.85em; cursor:pointer; color:#333; transition:0.2s;";
+        else if (numbers.length >= 10 && numbers.length <= 12) {
+            // 🔥 10~12자리: 겹치는 택배사 버튼 동시 표출
+            const btnStyle = "padding:4px 8px; margin-left:4px; border:1px solid #ccc; background:#fff; border-radius:12px; font-size:0.85em; cursor:pointer; color:#555; transition:0.2s;";
+            const activeStyle = "padding:4px 8px; margin-left:4px; border:1px solid #007AFF; background:#e6f2ff; border-radius:12px; font-size:0.85em; cursor:pointer; color:#007AFF; font-weight:bold; transition:0.2s;";
             
-            pText.innerHTML = `
-                <span style="font-size:0.9em; color:#666;">택배사 선택: </span>
-                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.hanjin')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">한진</button>
-                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.lotteglogis')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">롯데</button>
-                <button type="button" style="${btnStyle}" onclick="window.quickSelect('kr.logen')" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">로젠</button>
-            `;
-            if (changeBtn) changeBtn.style.display = 'none'; // 기본 변경 버튼 임시 숨김
-            pArea.classList.add('show');
-            
-            // 기본값 설정 (선택 안 하고 바로 추가할 경우를 대비)
-            currentCarrierId = 'kr.hanjin'; 
-            cSelect.value = 'kr.hanjin';
-        } 
-        else if (numbers.length === 10 || numbers.length === 12) {
-            setSinglePrediction('kr.cjlogistics', `예상: CJ대한통운`);
-        } 
-        else {
-            setSinglePrediction('kr.cjlogistics', `예상: CJ대한통운`);
-        }
-    } 
-    else if (!keywordDetected && numbers.length < 9) {
-        pArea.classList.remove('show');
-    }
-
-    // 단일 선택일 때 화면에 세팅하는 내부 함수
-    function setSinglePrediction(id, textMsg) {
-        currentCarrierId = id;
-        cSelect.value = id;
-        pText.innerHTML = textMsg;
-        if (changeBtn) changeBtn.style.display = 'inline-block';
-        pArea.classList.add('show');
-    }
-}
-
-// 🔥 다중 선택 버튼을 눌렀을 때 실행될 글로벌 함수
-window.quickSelect = function(id) {
-    currentCarrierId = id;
-    document.getElementById('carrierSelect').value = id;
-    
-    // 선택된 택배사 이름으로 텍스트 변경
-    const pText = document.getElementById('predictionText');
-    pText.innerHTML = `<span style="color:#007AFF; font-weight:bold;">✔ 선택됨:</span> ${carrierInfo[id].name}`;
-    
-    // 숨겨뒀던 기존의 '변경' 버튼 다시 표시
-    const changeBtn = document.getElementById('predictionArea').querySelector('.btn-change');
-    if(changeBtn) changeBtn.style.display = 'inline-block';
-}
-
-async function deleteTrack(item) {
-    if(!confirm('삭제하시겠습니까?')) return;
-    if (currentUser) {
-        try { await deleteDoc(doc(db, "users", currentUser.uid, "tracks", item.docId)); } catch(e) {}
-    } else {
-        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
-        items = items.filter(i => i.id !== item.id);
-        localStorage.setItem('guestTracks', JSON.stringify(items));
-        loadGuestTracks();
-    }
-}
-
-async function editMemo(item) {
-    const newMemo = prompt('수정할 메모:', item.memo || '');
-    if (newMemo === null) return;
-    if (currentUser) {
-        await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), { memo: newMemo });
-    } else {
-        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
-        const t = items.find(i => i.id === item.id);
-        if(t) { t.memo = newMemo; localStorage.setItem('guestTracks', JSON.stringify(items)); loadGuestTracks(); }
-    }
-}
-
-async function updateTrackStatus(item, stateText, detail, rank) {
-    if (item.lastState === stateText && item.lastDetail === detail) return;
-
-    if (currentUser) {
-        await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
-            lastState: stateText, lastDetail: detail, statusRank: rank, lastUpdate: Date.now()
-        });
-    } else {
-        let items = JSON.parse(localStorage.getItem('guestTracks')) || [];
-        const t = items.find(i => i.id === item.id);
-        if(t) {
-            t.lastState = stateText; t.lastDetail = detail; t.statusRank = rank; t.lastUpdate = Date.now();
-            localStorage.setItem('guestTracks', JSON.stringify(items));
-            const el = document.getElementById(`item-${item.docId}`);
-            if(el) {
-                el.querySelector('.status-text').innerText = stateText;
-                el.querySelector('.detail-text').innerText = detail;
-            }
-        }
-    }
-}
-
-async function checkDeliveryStatus(item) {
-    if (Date.now() - (item.lastUpdate || 0) < 300000 || item.statusRank === 2) return;
-    if (item.carrier === 'global.aliexpress') return;
-
-    const targetUrl = `https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`;
-    const myProxyUrl = "https://shiptrack-proxy.wogus3317.workers.dev";
-    
-    try {
-        const res = await fetch(`${myProxyUrl}/?url=${encodeURIComponent(targetUrl)}`);
-
-        if (res.ok) {
-            const data = await res.json();
-            const stateText = data.state ? data.state.text : '상태 미등록';
-            const location = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].location.name : '';
-            const time = (data.progresses && data.progresses.length > 0) ? data.progresses[data.progresses.length - 1].time.substring(5, 16).replace('T', ' ') : '';
-            const detail = location ? `${time} | ${location}` : (time || '');
-            
-            let rank = 1;
-            if (stateText.includes('완료') || stateText.includes('도착')) rank = 2;
-            else if (stateText.includes('실패')) rank = 3;
-
-            await updateTrackStatus(item, stateText, detail, rank);
-            
-        } else if (res.status === 404) {
-            console.log(`[${item.number}] 택배사 전산 미등록`);
-        } else {
-            console.error(`[${item.number}] API 서버 에러: ${res.status}`);
-            await updateTrackStatus(item, 'API 조회 실패', '일시적인 서버 오류', 3);
-        }
-    } catch (e) {
-        console.error(`[${item.number}] 조회 중 네트워크 예외 발생:`, e);
-        await updateTrackStatus(item, '네트워크 오류', '프록시 연결 실패', 3);
-    }
-}
-
-function setFilter(event, filterType) {
-    currentFilter = filterType;
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    const index = Array.from(document.querySelectorAll('.filter-btn')).indexOf(event.target);
-    const glider = document.getElementById('tab-glider');
-    if(glider) glider.style.transform = `translateX(${index * 100}%)`;
-    
-    if(currentUser) subscribeMyTracks(currentUser.uid);
-    else loadGuestTracks();
-}
-
-function finishAdd() {
-    document.getElementById('trackingNumber').value = '';
-    document.getElementById('trackingMemo').value = '';
-    document.getElementById('deliveryDate').value = ''; 
-    document.getElementById('predictionArea').classList.remove('show');
-    const s = document.getElementById('carrierSelect');
-    s.style.display = 'none'; s.classList.remove('show');
-}
-window.showSelectBox = function() {
-    document.getElementById('predictionArea').classList.remove('show'); 
-    const s = document.getElementById('carrierSelect');
-    s.style.display = 'block'; s.classList.add('show');
-}
-function copy(text) {
-    navigator.clipboard.writeText(text);
-    const t = document.getElementById('toast');
-    t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000);
-}
+            // 타이핑할 때마다 버튼이 리셋되지 않도록 방어하는 로직
+            if (!pText.innerHTML.includes('<button')) {
+                pText.innerHTML = `
+                    <span style="font-size:0.85em; color:#666;">추천:</span>
+                    <button type="button" class="quick-btn" style="${activeStyle}" onclick="window.quickSelect(this, 'kr.
