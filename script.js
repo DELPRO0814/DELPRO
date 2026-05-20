@@ -422,6 +422,10 @@ function finishAdd() {
     document.getElementById('trackingMemo').value = '';
     document.getElementById('deliveryDate').value = ''; 
     document.getElementById('predictionArea').classList.remove('show');
+    
+    // 🔥 이 줄이 추가되었습니다! (기존 버튼 찌꺼기 완벽 삭제)
+    document.getElementById('predictionText').innerHTML = ''; 
+    
     const s = document.getElementById('carrierSelect');
     s.style.display = 'none'; s.classList.remove('show');
 }
