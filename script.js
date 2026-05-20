@@ -35,10 +35,8 @@ onAuthStateChanged(auth, (user) => {
         // [회원] 로그인 상태
         currentUser = user;
         if (loginBtn) {
-            // 로그인 페이지라면 -> 메인 앱(루트)으로 이동
             window.location.replace('/');
         } else {
-            // 앱 페이지라면 -> 데이터 구독
             subscribeMyTracks(user.uid);
         }
     } else {
@@ -46,17 +44,13 @@ onAuthStateChanged(auth, (user) => {
         const isGuest = localStorage.getItem('guestMode') === 'true';
 
         if (isGuest) {
-            // [비회원 모드]
             if (loginBtn) {
-                // 로그인 페이지라면 -> 메인 앱(루트)으로 이동
                 window.location.replace('/');
             } else {
                 loadGuestTracks();
             }
         } else {
-            // [완전 비로그인]
             if (!loginBtn) {
-                // 앱 페이지라면 -> 로그인 폴더로 쫓아냄
                 window.location.replace('/login');
             }
         }
@@ -297,9 +291,8 @@ async function editMemo(item) {
     }
 }
 
-// 상태 업데이트 로직을 헬퍼 함수로 분리
 async function updateTrackStatus(item, stateText, detail, rank) {
-    if (item.lastState === stateText && item.lastDetail === detail) return; // 변경점 없으면 스킵
+    if (item.lastState === stateText && item.lastDetail === detail) return;
 
     if (currentUser) {
         await updateDoc(doc(db, "users", currentUser.uid, "tracks", item.docId), {
@@ -326,17 +319,11 @@ async function checkDeliveryStatus(item) {
 
     const targetUrl = `https://apis.tracker.delivery/carriers/${item.carrier}/tracks/${item.number}`;
     
+    // 사용자가 생성한 클라우드플레어 워커 프록시 주소 적용
+    const myProxyUrl = "https://shiptrack-proxy.wogus3317.workers.dev";
+    
     try {
-        let res;
-        try {
-            // 1순위: 기존 프록시 시도
-            res = await fetch('https://corsproxy.io/?' + encodeURIComponent(targetUrl));
-            if (!res.ok && res.status !== 404) throw new Error('Primary proxy failed');
-        } catch (proxyErr) {
-            console.warn(`[${item.number}] corsproxy.io 실패, 대체 프록시 시도 중...`);
-            // 2순위: 대체 프록시 시도
-            res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl));
-        }
+        const res = await fetch(`${myProxyUrl}/?url=${encodeURIComponent(targetUrl)}`);
 
         if (res.ok) {
             const data = await res.json();
@@ -352,10 +339,8 @@ async function checkDeliveryStatus(item) {
             await updateTrackStatus(item, stateText, detail, rank);
             
         } else if (res.status === 404) {
-            // 404는 택배사 전산에 아직 등록되지 않은 정상적인 대기 상태
-            console.log(`[${item.number}] 택배사 전산 미등록 (접수 전)`);
+            console.log(`[${item.number}] 택배사 전산 미등록`);
         } else {
-            // 403, 429, 500 등 프록시나 API 서버 자체 에러
             console.error(`[${item.number}] API 서버 에러: ${res.status}`);
             await updateTrackStatus(item, 'API 조회 실패', '일시적인 서버 오류', 3);
         }
